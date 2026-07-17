@@ -10,7 +10,7 @@
 <link rel="manifest" href="manifest.json" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <link rel="icon" type="image/png" href="icon-192.png" />
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>/* កំណត់ theme មុនគូរអេក្រង់ — កុំឱ្យភ្លឹបភ្លែតពណ៌ */
 try{var _t=localStorage.getItem('khmer-expense-theme')||'auto';
 if(_t==='dark'||(_t==='auto'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)){
@@ -1154,7 +1154,7 @@ if(_t==='dark'||(_t==='auto'&&window.matchMedia&&matchMedia('(prefers-color-sche
       <div class="inputwrap">
         <span class="inputicon">✉️</span>
         <input class="authinput" id="resetEmail" type="email" placeholder="m@example.com">
-        <button class="authlink" id="sendCodeBtn" style="flex-shrink:0; padding:0 6px;">ផ្ញើលេខកូដ</button>
+        <button class="authlink" id="sendCodeBtn" style="flex-shrink:0; padding:0 6px;">ផ្ញើតំណ</button>
       </div>
 
       <div id="resetStep2" style="display:none">
@@ -1423,9 +1423,10 @@ window.addEventListener('resize',setVh);
 window.addEventListener('orientationchange',setVh);
 if(window.visualViewport){window.visualViewport.addEventListener('resize',setVh);}
 
-// ═══ Google Login ═══ ជំនួសអត្ថបទខាងក្រោមដោយ Client ID របស់អ្នកពី Google Cloud Console
-// (មើលជំហានក្នុង README-google-login.md) — ទុកនៅដដែលបើមិនប្រើ Google Login
-const GOOGLE_CLIENT_ID='954850898278-93d2sct0nrk6kdh0bj3g64hm6lcq5dl7.apps.googleusercontent.com';
+// ═══ Supabase ═══ ជំនួសតម្លៃ ២ ខាងក្រោមដោយរបស់អ្នក (Supabase → Settings → API)
+// មើលជំហានលម្អិតក្នុង README-supabase.md
+const SUPABASE_URL='https://kfgeigqxwkvvyqjtqitf.supabase.co/rest/v1/';
+const SUPABASE_ANON_KEY='sb_publishable_qpBNtVgB6DiOcskXHFUP8A_qFTnHGTC';
 
 const URL_KEY='khmer-expense-script-url';
 const CACHE_KEY='khmer-expense-cache-v3';
@@ -1443,7 +1444,14 @@ const CATEGORY_ICONS={
 const INCOME_CATEGORIES=['ប្រាក់ខែ','លក់ដូរ','អាជីវកម្ម','ការវិនិយោគ','អំណោយ','ការប្រាក់','ជំនួយ','ផ្សេងៗ'];
 const EXPENSE_CATEGORIES=['អាហារ','ភេសជ្ជៈ','ទំនិញផ្ទះ','សម្លៀកបំពាក់','ដឹកជញ្ជូន','សាំង','ផ្ទះ','ភ្លើង-ទឹក','ទូរសព្ទ-Net','សុខភាព','សម្ផស្ស','ការសិក្សា','កម្សាន្ត','ដំណើរកម្សាន្ត','កូន','សត្វចិញ្ចឹម','បរិច្ចាគ','បំណុល','ផ្សេងៗ'];
 
-let scriptUrl=localStorage.getItem(URL_KEY)||'';
+// បង្កើត Supabase client — scriptUrl ក្លាយជាទង់សម្គាល់ថា server រួចរាល់ (រក្សាឈ្មោះចាស់ ដើម្បីកុំកែកូដច្រើនកន្លែង)
+let sb=null;
+try{
+  if(SUPABASE_URL.indexOf('PASTE_')!==0&&window.supabase){
+    sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+  }
+}catch(_){}
+let scriptUrl=sb?'supabase':'';
 let authToken=''; // token រក្សាតែក្នុង memory — ត្រូវចុច "ចូល" រាល់ពេលបើក
 let currentUser='';
 let guestMode=false; // ប្រើដោយមិនទាន់ភ្ជាប់/ចូលគណនី — ទិន្នន័យក្នុងម៉ាស៊ីន
@@ -1522,27 +1530,40 @@ async function fetchAll(){
   }
   setSync('busy','កំពុងទាញយក...');
   try{
-    const res=await fetch(scriptUrl+'?token='+encodeURIComponent(authToken));
-    const data=await res.json();
-    if(!data.ok){
-      if(data.error==='unauthorized'){forceLogout();return;}
-      throw new Error(data.error||'error');
+    const {data,error}=await sb.from('transactions')
+      .select('id,type,category,amount,note,date,currency,image')
+      .order('date',{ascending:false});
+    if(error){
+      const s2=await sb.auth.getSession();
+      if(!s2.data||!s2.data.session){forceLogout();return;} // session ផុត → ចេញ
+      throw new Error(error.message);
     }
-    transactions=data.transactions.sort((a,b)=>new Date(b.date)-new Date(a.date));
+    transactions=(data||[]).sort((a,b)=>new Date(b.date)-new Date(a.date));
     cacheSave();
     setSync('ok','បានធ្វើសមកាលកម្ម');
     applyRecurring(); // បញ្ចូលប្រតិបត្តិការដដែលៗរបស់ខែនេះ (បើដល់ថ្ងៃ)
   }catch(e){
-    try{const c=localStorage.getItem(CACHE_KEY); if(c) transactions=JSON.parse(c);}catch(_){}
+    cacheLoad();
     setSync('err','មិនអាចភ្ជាប់បានទេ');
   }
   render();
 }
 // cacheSave(): រក្សាទុកច្បាប់ចម្លងប្រតិបត្តិការក្នុង localStorage ជា cache (ដកចោលរូបភាព ដើម្បីកុំឱ្យធំពេក)
+function cacheKeyFor(){return CACHE_KEY+'-'+acctKey();} // cache ដាច់ដោយឡែកតាមគណនី
 function cacheSave(){
   // រូបភាពអាចធំ — កុំរក្សា image ក្នុង cache ដើម្បីកុំឱ្យ localStorage ពេញ
   try{
-    localStorage.setItem(CACHE_KEY,JSON.stringify(transactions.map(t=>({...t,image:''}))));
+    localStorage.setItem(cacheKeyFor(),JSON.stringify(transactions.map(t=>({...t,image:''}))));
+  }catch(_){}
+}
+function cacheLoad(){
+  // បង្ហាញច្បាប់ចម្លងចាស់ភ្លាមៗ ខណៈកំពុងទាញទិន្នន័យថ្មីពី server (ឱ្យមើលទៅលឿន)
+  try{
+    const c=localStorage.getItem(cacheKeyFor());
+    if(c){
+      transactions=JSON.parse(c);
+      transactions.sort((a,b)=>new Date(b.date)-new Date(a.date));
+    }
   }catch(_){}
 }
 // loadLocal(): ផ្ទុកប្រតិបត្តិការពី localStorage មកដាក់ក្នុងអថេរ transactions (ប្រើពេលជា guest)
@@ -1559,13 +1580,60 @@ function saveLocal(){
 // postToSheet(payload): ផ្ញើសំណើ (POST) ទៅ Google Apps Script URL ដើម្បី add/update/delete/login ។ល។
 // រួមភ្ជាប់ token ស្វ័យប្រវត្តិ, បោះ error បើ server ឆ្លើយថាមិនជោគជ័យ
 async function postToSheet(payload){
-  const res=await fetch(scriptUrl,{
-    method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body:JSON.stringify({...payload,token:authToken}),
-  });
-  const data=await res.json();
-  if(!data.ok) throw new Error(data.error||'error');
-  return data;
+  if(!sb) throw new Error('no_server');
+  const action=payload.action;
+  if(action==='add'){
+    const t=payload.transaction;
+    const {error}=await sb.from('transactions').insert({
+      id:t.id,type:t.type,category:t.category,amount:t.amount,
+      note:t.note||'',date:t.date,currency:t.currency||'៛',image:t.image||'',
+    });
+    if(error) throw new Error(error.message);
+    return {ok:true};
+  }
+  if(action==='update'){
+    const t=payload.transaction;
+    const {error}=await sb.from('transactions').update({
+      type:t.type,category:t.category,amount:t.amount,
+      note:t.note||'',date:t.date,currency:t.currency||'៛',image:t.image||'',
+    }).eq('id',t.id);
+    if(error) throw new Error(error.message);
+    return {ok:true};
+  }
+  if(action==='delete'){
+    const {error}=await sb.from('transactions').delete().eq('id',payload.id);
+    if(error) throw new Error(error.message);
+    return {ok:true};
+  }
+  if(action==='logout'){
+    await sb.auth.signOut();
+    return {ok:true};
+  }
+  if(action==='verify'){
+    const {data}=await sb.auth.getSession();
+    if(!data||!data.session) throw new Error('unauthorized');
+    return {ok:true,email:data.session.user.email};
+  }
+  if(action==='changePassword'){
+    // ផ្ទៀងផ្ទាត់ពាក្យសម្ងាត់បច្ចុប្បន្នសិន (បើផ្តល់មក) រួចទើបប្តូរថ្មី
+    if(payload.oldPassword){
+      const {error:e1}=await sb.auth.signInWithPassword({
+        email:currentUser,password:payload.oldPassword,
+      });
+      if(e1) throw new Error('invalid');
+    }
+    const {error}=await sb.auth.updateUser({password:payload.newPassword});
+    if(error) throw new Error(String(error.message).indexOf('weak')>=0?'weak':error.message);
+    return {ok:true};
+  }
+  if(action==='requestReset'){
+    const {error}=await sb.auth.resetPasswordForEmail(payload.email,{
+      redirectTo:location.origin+location.pathname, // ត្រឡប់មកកម្មវិធីនេះវិញ
+    });
+    if(error) throw new Error(error.message);
+    return {ok:true};
+  }
+  throw new Error('Unknown action');
 }
 
 // ---------- Helpers (មុខងារជំនួយទូទៅ) ----------
@@ -2008,7 +2076,7 @@ function renderMore(c){
       <div class="pavatar">${guestMode?'👤':'🧑‍💼'}</div>
       <div class="pinfo">
         <div class="pname">${guestMode?'អ្នកភ្ញៀវ':esc(currentUser)}</div>
-        <div class="psub">${guestMode?'មិនទាន់ចូលគណនី — ទិន្នន័យរក្សាក្នុងម៉ាស៊ីន':'បានចូលគណនី · ធ្វើសមកាលកម្មជាមួយ Google Sheets'}</div>
+        <div class="psub">${guestMode?'មិនទាន់ចូលគណនី — ទិន្នន័យរក្សាក្នុងម៉ាស៊ីន':'បានចូលគណនី · ធ្វើសមកាលកម្មជាមួយ Supabase'}</div>
       </div>
       ${isAuthed?`
       <div class="pbtns">
@@ -2017,13 +2085,11 @@ function renderMore(c){
       </div>`:''}
     </div>`;
   if(!scriptUrl){
-    rows+=`<div class="setrow" id="setConnect"><span class="l">🔗 ភ្ជាប់ Google Sheets</span><span class="r">›</span></div>`;
+    rows+=`<div class="setrow" id="setConnect"><span class="l">⚠️ មិនទាន់កំណត់ Supabase — មើល README</span><span class="r">›</span></div>`;
   }else if(guestMode){
     rows+=`<div class="setrow" id="setLogin"><span class="l">🔑 ចូល / ចុះឈ្មោះគណនី</span><span class="r">›</span></div>`;
-    rows+=`<div class="setrow" id="setConnect"><span class="l">🔗 ប្តូរ URL Google Sheets</span><span class="r">›</span></div>`;
   }else{
     rows+=`<div class="setrow" id="setRefresh"><span class="l">🔄 ទាញយកទិន្នន័យឡើងវិញ</span><span class="r">›</span></div>`;
-    rows+=`<div class="setrow" id="setConnect"><span class="l">🔗 ប្តូរ URL Google Sheets</span><span class="r">›</span></div>`;
   }
   rows+=`<div class="setrow" id="setTheme"><span class="l">🌓 រូបរាង (Theme)</span><span class="r">${THEME_LABELS[themeMode]} ›</span></div>`;
   rows+=`<div class="setrow" id="setBudget"><span class="l">🎯 ថវិកាប្រចាំខែ</span><span class="r">›</span></div>`;
@@ -2037,7 +2103,7 @@ function renderMore(c){
   stagger(document.getElementById('moreList'));
 
   const on=(id,fn)=>{const el=document.getElementById(id);if(el)el.addEventListener('click',fn);};
-  on('setConnect',openUrlModal);
+  on('setConnect',()=>alert('សូមអានឯកសារ README-supabase.md — បង្កើតគម្រោង Supabase រួចដាក់ URL និង KEY ក្នុង index.html'));
   on('setTheme',()=>{
     themeMode=themeMode==='auto'?'light':(themeMode==='light'?'dark':'auto');
     localStorage.setItem(THEME_KEY,themeMode);
@@ -2076,14 +2142,8 @@ function renderMore(c){
   on('setRestore',()=>document.getElementById('restoreInput').click());
   // ចាកចេញ៖ ចេញទៅផ្ទាំងដើមភ្លាមៗ ដោយមិនសួរបញ្ជាក់ — token ត្រូវលុបនៅ server ក្នុងផ្ទៃខាងក្រោយ
   on('setLogout',()=>{
-    const tok=authToken;
-    forceLogout();
-    if(tok){
-      fetch(scriptUrl,{
-        method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body:JSON.stringify({action:'logout',token:tok}),
-      }).catch(()=>{});
-    }
+    forceLogout(); // ចេញទៅផ្ទាំងដើមភ្លាម
+    if(sb){sb.auth.signOut().catch(()=>{});} // លុប session Supabase ក្នុងផ្ទៃខាងក្រោយ
   });
 }
 
@@ -2236,6 +2296,11 @@ function openPwModal(){
   ['pwOld','pwNew','pwNew2'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('pwErr').style.display='none';
   document.getElementById('pwMsg').style.display='none';
+  // បង្ហាញជួរ "ពាក្យសម្ងាត់បច្ចុប្បន្ន" ឡើងវិញ (recovery mode អាចលាក់វា)
+  const oldInp=document.getElementById('pwOld');
+  const lb=document.querySelector('label[for="pwOld"]');
+  if(lb)lb.style.display='';
+  if(oldInp.parentElement)oldInp.parentElement.style.display='';
   document.getElementById('pwOverlay').classList.add('open');
 }
 document.getElementById('pwCancel').addEventListener('click',
@@ -2267,7 +2332,21 @@ document.getElementById('pwSave').addEventListener('click',async()=>{
     }catch(_){}
     msg.textContent='✔ ពាក្យសម្ងាត់ត្រូវបានប្តូរដោយជោគជ័យ';
     msg.style.display='block';
-    setTimeout(()=>document.getElementById('pwOverlay').classList.remove('open'),1200);
+    if(recoveryMode){
+      // មកពីតំណ "ភ្លេចពាក្យសម្ងាត់" — កំណត់រួច ចូលកម្មវិធីផ្ទាល់
+      recoveryMode=false;
+      authToken='supabase';
+      try{
+        const {data}=await sb.auth.getSession();
+        currentUser=(data&&data.session)?(data.session.user.email||''):'';
+      }catch(_){}
+      setTimeout(()=>{
+        document.getElementById('pwOverlay').classList.remove('open');
+        enterApp();
+      },900);
+    }else{
+      setTimeout(()=>document.getElementById('pwOverlay').classList.remove('open'),1200);
+    }
   }catch(e){
     const msgs={
       'invalid':'ពាក្យសម្ងាត់បច្ចុប្បន្នមិនត្រឹមត្រូវ',
@@ -2516,7 +2595,11 @@ document.getElementById('connectBtn').addEventListener('click',()=>{
 const CRED_KEY='khmer-expense-cred';
 // ---------- ការចូល / ចុះឈ្មោះ ----------
 // showAuth(): បង្ហាញផ្ទាំងចូល/ចុះឈ្មោះគណនី, បំពេញអ៊ីមែល/ពាក្យសម្ងាត់ស្រាប់ បើធ្លាប់ "ចងចាំខ្ញុំ"
+function warmUpServer(){
+  // Supabase ជា server ពិត — គ្មាន cold start ទេ (មិនចាំបាច់ដាស់)
+}
 function showAuth(){
+  warmUpServer();
   document.getElementById('setupScreen').style.display='none';
   document.getElementById('appScreen').style.display='none';
   document.getElementById('authScreen').classList.add('open');
@@ -2534,24 +2617,37 @@ function showAuth(){
   }catch(_){}
 }
 // enterApp(): បន្ទាប់ពីចូល/ចុះឈ្មោះជោគជ័យ — បង្ហាញអេក្រង់សំខាន់ ហើយផ្ទុកទិន្នន័យពី Google Sheets
-async function enterApp(){
+async function enterApp(preTx){
   guestMode=false;
   saveSession(true);
+  const hasPre=Array.isArray(preTx);
+  if(hasPre){
+    // ទិន្នន័យភ្ជាប់មកជាមួយចម្លើយ login រួចហើយ — មិនចាំបាច់ហៅ server ម្តងទៀតទេ
+    transactions=preTx.sort((a,b)=>new Date(b.date)-new Date(a.date));
+    cacheSave();
+  }else{
+    cacheLoad(); // បង្ហាញទិន្នន័យចាស់ភ្លាម — server ធ្វើសមកាលកម្មពីក្រោយ
+  }
   document.getElementById('authScreen').classList.remove('open');
   document.getElementById('setupScreen').style.display='none';
   document.getElementById('appScreen').style.display='flex';
   render();
-  await offerUploadLocal();
-  fetchAll();
+  const uploaded=await offerUploadLocal();
+  if(hasPre&&!uploaded){
+    setSync('ok','បានធ្វើសមកាលកម្ម');
+    applyRecurring();
+  }else{
+    fetchAll(); // ទាញម្តងទៀត បើទើបផ្ទុកទិន្នន័យ guest ឡើង ឬគ្មានទិន្នន័យភ្ជាប់មក
+  }
 }
 // ផ្ទុកទិន្នន័យក្នុងម៉ាស៊ីនឡើងទៅគណនី (បើមាន)
 // offerUploadLocal(): បើមានទិន្នន័យចាស់ក្នុងម៉ាស៊ីន (ពេលធ្លាប់ជា guest) សួរថាតើផ្ទុកឡើងទៅគណនីថ្មីដែរឬទេ
 async function offerUploadLocal(){
   let local=[];
   try{local=JSON.parse(localStorage.getItem(LOCAL_TX_KEY)||'[]');}catch(_){}
-  if(!local.length) return;
+  if(!local.length) return false;
   if(!confirm('មានទិន្នន័យក្នុងម៉ាស៊ីន '+local.length+' កំណត់ត្រា — ផ្ទុកឡើងទៅគណនីរបស់អ្នក?')){
-    return; // ទុកក្នុងម៉ាស៊ីនដដែល — អាចផ្ទុកឡើងពេលក្រោយដោយ Restore
+    return false; // ទុកក្នុងម៉ាស៊ីនដដែល — អាចផ្ទុកឡើងពេលក្រោយដោយ Restore
   }
   setSync('busy','កំពុងផ្ទុកឡើង...');
   let ok=0;
@@ -2560,10 +2656,13 @@ async function offerUploadLocal(){
   }
   if(ok===local.length){localStorage.removeItem(LOCAL_TX_KEY);}
   alert('បានផ្ទុកឡើង '+ok+'/'+local.length+' កំណត់ត្រា');
+  return ok>0;
 }
 // forceLogout(reload): បោសសម្អាត token/session ចេញ ហើយត្រឡប់ទៅផ្ទាំងចូលគណនី (ឬ reload ទំព័រ)
 function forceLogout(){
   // ត្រឡប់ទៅផ្ទាំងដើមភ្លាមៗ ដោយមិន reload ទំព័រទាំងមូល — លឿនជាងច្រើន
+  let ck='';
+  try{ck=cacheKeyFor();}catch(_){} // ចាប់ key មុនលុបឈ្មោះគណនី
   authToken=''; currentUser=''; guestMode=false;
   transactions=[]; editingTx=null;
   activeNav='trans'; activeTab='daily';
@@ -2571,7 +2670,7 @@ function forceLogout(){
   document.getElementById('calOverlay').classList.remove('open');
   document.getElementById('pwOverlay').classList.remove('open');
   document.getElementById('urlOverlay').classList.remove('open');
-  localStorage.removeItem(CACHE_KEY);
+  try{if(ck)localStorage.removeItem(ck);}catch(_){}
   clearSession();
   showAuth();
 }
@@ -2609,45 +2708,16 @@ document.getElementById('eyeBtn').addEventListener('click',()=>{
 
 // ចុចប៊ូតុងចូលតាម Google/Facebook/Apple → បង្ហាញសារថាមិនទាន់អាចប្រើ (ត្រូវការ host លើ website)
 // ---------- ចូលដោយ Google ពិតប្រាកដ (Google Identity Services) ----------
-let googleTokenClient=null;
 function googleSignIn(){
   const err=document.getElementById('authErr');
-  const msg=document.getElementById('authMsg');
-  err.style.display='none';msg.style.display='none';
   const show=m=>{err.textContent=m;err.style.display='block';};
-  if(!scriptUrl){show('សូមភ្ជាប់ Google Sheets ជាមុនសិន (ម៉ឺនុយ ផ្សេងៗ → ភ្ជាប់ Google Sheets)');return;}
-  if(GOOGLE_CLIENT_ID.indexOf('PASTE_YOUR')===0){
-    show('មិនទាន់កំណត់ Google Client ID ទេ — សូមមើលជំហានក្នុង README-google-login.md');return;
-  }
-  if(!(window.google&&google.accounts&&google.accounts.oauth2)){
-    show('កំពុងផ្ទុក Google... សូមព្យាយាមម្តងទៀតបន្តិចទៀត (ត្រូវការអ៊ីនធឺណិត)');return;
-  }
-  if(!googleTokenClient){
-    googleTokenClient=google.accounts.oauth2.initTokenClient({
-      client_id:GOOGLE_CLIENT_ID,
-      scope:'openid email profile',
-      callback:async resp=>{
-        if(!resp||!resp.access_token){show('ការចូលដោយ Google ត្រូវបានបោះបង់');return;}
-        msg.textContent='កំពុងផ្ទៀងផ្ទាត់ជាមួយ Google...';msg.style.display='block';
-        try{
-          // ផ្ញើ access token ទៅ server ឱ្យផ្ទៀងផ្ទាត់ដោយផ្ទាល់ជាមួយ Google (សុវត្ថិភាព)
-          const d=await postToSheet({action:'googleLogin',accessToken:resp.access_token});
-          authToken=d.token;currentUser=d.email;
-          msg.style.display='none';
-          enterApp();
-        }catch(e){
-          msg.style.display='none';
-          const msgs={
-            'no_client_id':'Server មិនទាន់កំណត់ Client ID ទេ — សូម update Apps Script និង deploy ថ្មី',
-            'bad_token':'ការផ្ទៀងផ្ទាត់ Google បរាជ័យ — សូមព្យាយាមម្តងទៀត',
-            'unverified':'អ៊ីមែល Google នេះមិនទាន់បានផ្ទៀងផ្ទាត់ទេ',
-          };
-          show(msgs[e.message]||('បរាជ័យ ('+e.message+')'));
-        }
-      },
-    });
-  }
-  googleTokenClient.requestAccessToken();
+  err.style.display='none';
+  if(!sb){show('មិនទាន់កំណត់ Supabase ទេ — សូមមើល README-supabase.md');return;}
+  // បញ្ជូនទៅ Google → ត្រឡប់មកកម្មវិធីវិញដោយ session ស្រាប់ (startApp ចាប់បន្តដោយឯង)
+  sb.auth.signInWithOAuth({
+    provider:'google',
+    options:{redirectTo:location.origin+location.pathname},
+  }).catch(e=>show('បរាជ័យ ('+e.message+')'));
 }
 document.querySelectorAll('.socialbtn').forEach(b=>{
   b.addEventListener('click',()=>{
@@ -2676,12 +2746,27 @@ document.getElementById('authSubmit').addEventListener('click',async()=>{
   const btn=document.getElementById('authSubmit');
   btn.disabled=true;btn.textContent='កំពុងដំណើរការ...';
   try{
-    const d=await postToSheet({
-      action:authMode==='login'?'login':'signup',
-      email:email,password:pass,
-    });
-    authToken=d.token; // ក្នុង memory ប៉ុណ្ណោះ
-    currentUser=d.email;
+    if(!sb) throw new Error('no_server');
+    let userEmail='';
+    if(authMode==='login'){
+      const {data,error}=await sb.auth.signInWithPassword({email:email,password:pass});
+      if(error) throw new Error(error.message);
+      userEmail=data.user.email;
+    }else{
+      const {data,error}=await sb.auth.signUp({email:email,password:pass});
+      if(error) throw new Error(error.message);
+      if(!data.session){
+        // Supabase បើក "Confirm email" — ត្រូវបញ្ជាក់អ៊ីមែលសិន
+        const am=document.getElementById('authMsg');
+        am.textContent='✉️ សូមពិនិត្យអ៊ីមែលរបស់អ្នក ដើម្បីបញ្ជាក់គណនី រួចត្រឡប់មកចូលវិញ';
+        am.style.display='block';
+        btn.disabled=false;btn.textContent='✨ ចុះឈ្មោះ';
+        return;
+      }
+      userEmail=data.user.email;
+    }
+    authToken='supabase'; // session ពិតគ្រប់គ្រងដោយ Supabase ខ្លួនឯង
+    currentUser=userEmail;
     if(remember){
       localStorage.setItem(CRED_KEY,JSON.stringify({email:email,password:pass}));
     }else{
@@ -2690,12 +2775,12 @@ document.getElementById('authSubmit').addEventListener('click',async()=>{
     enterApp();
   }catch(e){
     const msgs={
-      'exists':'អ៊ីមែលនេះមានគណនីរួចហើយ — សូមចូលវិញ',
-      'invalid':'អ៊ីមែល ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ',
-      'use_google':'គណនីនេះបង្កើតតាម Google — សូមចុចប៊ូតុង Google ដើម្បីចូល',
-      'Unknown action':'Apps Script នៅជា version ចាស់ — សូម Deploy ជា New version',
+      'no_server':'មិនទាន់កំណត់ Supabase URL/KEY ក្នុង index.html ទេ — សូមមើល README-supabase.md',
+      'Invalid login credentials':'អ៊ីមែល ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ',
+      'User already registered':'អ៊ីមែលនេះមានគណនីរួចហើយ — សូមចូលវិញ',
+      'Email not confirmed':'អ៊ីមែលមិនទាន់បានបញ្ជាក់ទេ — សូមពិនិត្យប្រអប់សំបុត្រ',
     };
-    show(msgs[e.message]||('បរាជ័យ ('+e.message+') — សូមពិនិត្យអ៊ីនធឺណិត ឬ Deploy Script ជា New version'));
+    show(msgs[e.message]||('បរាជ័យ ('+e.message+')'));
   }
   btn.disabled=false;
   btn.textContent=authMode==='login'?'→ ចូល':'✨ ចុះឈ្មោះ';
@@ -2738,8 +2823,7 @@ document.getElementById('sendCodeBtn').addEventListener('click',async()=>{
   btn.disabled=true;btn.textContent='កំពុងផ្ញើ...';
   try{
     await postToSheet({action:'requestReset',email:email});
-    document.getElementById('resetStep2').style.display='block';
-    msg.textContent='បើអ៊ីមែលនេះមានគណនី លេខកូដ ៦ ខ្ទង់ត្រូវបានផ្ញើទៅ — សូមពិនិត្យប្រអប់សំបុត្រ (និង Spam)';
+    msg.textContent='✉️ តំណប្តូរពាក្យសម្ងាត់ត្រូវបានផ្ញើទៅអ៊ីមែល — សូមចុចតំណក្នុងអ៊ីមែល (ពិនិត្យ Spam ផង) វានឹងនាំអ្នកត្រឡប់មកកំណត់ពាក្យសម្ងាត់ថ្មីទីនេះ';
     msg.style.display='block';
   }catch(e){
     err.textContent=e.message==='mail_failed'
@@ -2747,7 +2831,7 @@ document.getElementById('sendCodeBtn').addEventListener('click',async()=>{
       :'បរាជ័យ ('+e.message+')';
     err.style.display='block';
   }
-  btn.disabled=false;btn.textContent='ផ្ញើលេខកូដ';
+  btn.disabled=false;btn.textContent='ផ្ញើតំណ';
 });
 
 // ចុច "ប្តូរពាក្យសម្ងាត់"៖ ត្រួតពិនិត្យលេខកូដ+ពាក្យសម្ងាត់ថ្មី រួចផ្ញើទៅ server ដើម្បីបញ្ជាក់ការប្តូរ
@@ -2926,7 +3010,7 @@ document.getElementById('getStarted').addEventListener('click',()=>{
 });
 document.getElementById('haveAcct').addEventListener('click',()=>{
   if(scriptUrl)showLoginCard('login');
-  else openUrlModal(); // ត្រូវភ្ជាប់ URL ជាមុនសិន ទើបចូលគណនីបាន
+  else alert('មិនទាន់កំណត់ Supabase ទេ — សូមមើល README-supabase.md');
 });
 
 // ---------- រូបក្រដាសប្រាក់រៀល (base64 — ផ្ទុកតែម្តង ប្រើគ្រប់កន្លែង) ----------
@@ -2958,6 +3042,7 @@ async function restoreAuth(sess){
   guestMode=false;
   authToken=sess.token;
   currentUser=sess.email||'';
+  cacheLoad(); // បង្ហាញទិន្នន័យចាស់ភ្លាម
   document.getElementById('authScreen').classList.remove('open');
   document.getElementById('setupScreen').style.display='none';
   document.getElementById('appScreen').style.display='flex';
@@ -2969,21 +3054,58 @@ async function restoreAuth(sess){
 
 // startApp(): ចំណុចចាប់ផ្តើមកម្មវិធី — ពិនិត្យ session ចាស់ (អនុញ្ញាត refresh 2 ដង) ដើម្បីសម្រេចថាបង្ហាញ
 // ផ្ទាំងណា៖ បន្ត guest, បន្តគណនីចូល, ទំព័រចូលគណនី ឬទំព័រ setup (បើមិនទាន់ភ្ជាប់ URL)
-function startApp(){
-  // ស្តារ session ពេល refresh — អនុញ្ញាត ២ ដង, ដងទី ៣ ត្រឡប់ទៅផ្ទាំងដើមវិញ
+async function startApp(){
+  // ត្រឡប់ពី Google OAuth ឬតំណប្តូរពាក្យសម្ងាត់? → រង់ចាំ supabase-js ដោះស្រាយ token ក្នុង URL
+  const oauthReturn=/[#?&](access_token|refresh_token|code|type=recovery)/.test(location.hash+location.search);
+  if(oauthReturn&&sb){
+    try{
+      for(let i=0;i<20;i++){
+        const {data}=await sb.auth.getSession();
+        if(data&&data.session)break;
+        await new Promise(r=>setTimeout(r,150));
+      }
+    }catch(_){}
+    try{history.replaceState(null,'',location.pathname);}catch(_){} // សម្អាត URL
+  }
+  // Session Supabase នៅរស់? → ចូលវិញភ្លាមៗ (លុះត្រាតែកំពុងកំណត់ពាក្យសម្ងាត់ថ្មី)
+  if(sb&&!recoveryMode){
+    try{
+      const {data}=await sb.auth.getSession();
+      if(data&&data.session){
+        let sess=null;
+        try{sess=JSON.parse(sessionStorage.getItem(SESS_KEY)||'null');}catch(_){}
+        const n=(parseInt(sessionStorage.getItem(REFRESH_KEY)||'0',10)||0)+1;
+        if(sess&&n>=3){
+          clearSession(); // refresh ដងទី ៣ → ត្រឡប់ទៅផ្ទាំងដើម (ចូលវិញរហ័ស ព្រោះ session នៅរស់)
+        }else{
+          try{sessionStorage.setItem(REFRESH_KEY,String(n));}catch(_){}
+          authToken='supabase';
+          currentUser=data.session.user.email||'';
+          guestMode=false;
+          cacheLoad(); // បង្ហាញទិន្នន័យចាស់ភ្លាម
+          document.getElementById('authScreen').classList.remove('open');
+          document.getElementById('setupScreen').style.display='none';
+          document.getElementById('appScreen').style.display='flex';
+          render();
+          saveSession(false);
+          fetchAll();
+          return;
+        }
+      }
+    }catch(_){}
+  }
+  // ស្តារ guest session ពេល refresh — ដូចមុន
   let sess=null;
   try{sess=JSON.parse(sessionStorage.getItem(SESS_KEY)||'null');}catch(_){}
-  if(sess){
+  if(sess&&sess.mode==='guest'){
     const n=(parseInt(sessionStorage.getItem(REFRESH_KEY)||'0',10)||0)+1;
-    if(n>=3){
-      clearSession(); // refresh ដងទី ៣ → ត្រឡប់ទៅដើម
-    }else{
+    if(n>=3){clearSession();}
+    else{
       try{sessionStorage.setItem(REFRESH_KEY,String(n));}catch(_){}
-      if(sess.mode==='guest'){enterGuest(false);return;}
-      if(sess.mode==='auth'&&sess.token&&scriptUrl){restoreAuth(sess);return;}
+      enterGuest(false);return;
     }
   }
-  showAuth(); // បង្ហាញផ្ទាំងចាប់ផ្តើម (splash) ជានិច្ច ពេលបើកថ្មី
+  showAuth(); // បង្ហាញផ្ទាំងចាប់ផ្តើម (splash)
 }
 // ═══════════════ 🎯 ថវិកាប្រចាំខែ ═══════════════
 const BUDGET_KEY='khmer-expense-budgets';
@@ -3337,12 +3459,26 @@ try{
   });
 }catch(_){}
 
-try{
-  startApp();
-}catch(e){
+// ---------- ភ្លេចពាក្យសម្ងាត់ (Supabase) — ចុចតំណក្នុងអ៊ីមែល → ត្រឡប់មកទីនេះ → កំណត់ថ្មី ----------
+let recoveryMode=false;
+if(sb){
+  sb.auth.onAuthStateChange((event)=>{
+    if(event==='PASSWORD_RECOVERY'){
+      recoveryMode=true;
+      openPwModal();
+      // លាក់ជួរ "ពាក្យសម្ងាត់បច្ចុប្បន្ន" — មិនត្រូវការទេក្នុង recovery
+      const oldInp=document.getElementById('pwOld');
+      const lb=document.querySelector('label[for="pwOld"]');
+      if(lb)lb.style.display='none';
+      if(oldInp.parentElement)oldInp.parentElement.style.display='none';
+    }
+  });
+}
+
+startApp().catch(e=>{
   console.error('startApp error',e);
   try{enterGuest(true);}catch(_){} // ការការពារ៖ កុំទុកអេក្រង់ទទេ
-}
+});
 try{fetchLiveRate();}catch(_){} // ទាញអត្រាថ្មីស្វ័យប្រវត្តិ (បើបើក និងហួស ១២ ម៉ោង)
 
 // ---------- PWA offline — ដំណើរការពេល host លើ https (ឧ. GitHub Pages) ----------
