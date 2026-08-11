@@ -57,9 +57,11 @@ button,input,textarea{font-family:var(--khmer); color:inherit;}
 /* ── ក្បាលអេក្រង់ដើម ── */
 .head{display:flex; align-items:center; gap:var(--sp3); padding:var(--sp6) var(--sp5) var(--sp4);}
 .ava{
-  width:42px; height:42px; border-radius:14px; flex:0 0 42px;
+  width:42px; height:42px; border-radius:14px; flex:0 0 42px; border:none; cursor:pointer;
   background:linear-gradient(140deg,var(--brand),var(--brand2));
+  background-size:cover; background-position:center; font-family:var(--khmer);
   display:flex; align-items:center; justify-content:center; color:#fff; font-weight:600;
+  transition:transform .2s var(--spring);
 }
 .hi{flex:1; min-width:0;}
 .hi small{display:block; font-size:12px; color:var(--soft); line-height:1.4;}
@@ -479,7 +481,7 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
 .herolink{color:rgba(255,255,255,.85) !important; padding:var(--sp3) 0;}
 .authlogo{width:64px; height:64px; border-radius:20px; background:rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:700;}
 .authwrap h1{font-size:22px; font-weight:700; margin:0;}
-.authwrap p{margin:0; font-size:13.5px; opacity:.85; max-width:280px;}
+.authwrap p{margin:0 auto; font-size:13.5px; opacity:.85; max-width:280px;}
 .authwrap .save{width:100%;}
 .authcard{display:flex; flex-direction:column; gap:var(--sp3); width:100%;}
 .authhead{text-align:center; margin-bottom:var(--sp5);}
@@ -512,6 +514,30 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
 .swatch.on{border-color:var(--ink); box-shadow:0 0 0 2px var(--card);}
 .hint{font-size:12px; color:var(--soft); text-align:center; padding:var(--sp3) 0;}
 .dbtn{width:100%; border:none; border-radius:var(--r-md); padding:14px; cursor:pointer; background:var(--sink); color:var(--expense); font-size:14px; font-weight:600; margin-top:var(--sp2);}
+
+/* ── ជម្រើសពណ៌កម្មវិធី ── */
+.accgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:var(--sp3); margin-bottom:var(--sp4);}
+.accopt{border:none; cursor:pointer; border-radius:var(--r-md); padding:var(--sp4) var(--sp2);
+  background:var(--card); box-shadow:var(--shadow); display:flex; flex-direction:column;
+  align-items:center; gap:8px; font-size:11.5px; color:var(--soft); font-family:var(--khmer);
+  transition:all .22s var(--spring);}
+.accopt i{width:42px; height:42px; border-radius:15px; display:block;}
+.accopt.on{color:var(--ink); box-shadow:0 0 0 2px var(--brand), var(--shadow);}
+.accopt:active{transform:scale(.94);}
+
+/* ── រូបតំណាងអ្នកប្រើ ── */
+.ava:active{transform:scale(.92);}
+.ava.hasimg,.pav.hasimg{color:transparent; font-size:0;}
+.pav{position:relative; border:none; cursor:pointer; background-size:cover; background-position:center;
+  font-family:var(--khmer); transition:transform .2s var(--spring);}
+.pav:active{transform:scale(.94);}
+.pavedit{position:absolute; right:-3px; bottom:-3px; width:22px; height:22px; border-radius:50%;
+  background:#fff; color:var(--brand); display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 8px rgba(0,0,0,.3); font-size:11px;}
+.pav.hasimg .pavedit{font-size:11px;}
+.pmid{flex:1; min-width:0;}
+.pnamebtn{margin-top:6px; border:none; cursor:pointer; border-radius:999px; padding:5px 12px;
+  font-size:11.5px; font-family:var(--khmer); background:rgba(255,255,255,.22); color:#fff;}
 
 /* ── ក្បាលកាបូបក្នុងបញ្ជីប្រតិបត្តិការ ── */
 .walbanner{align-items:center; gap:var(--sp3); margin:0 var(--sp5) var(--sp4);
@@ -703,7 +729,37 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
     <div class="frow"><label>អ៊ីមែល</label><input id="loginEmail" type="email" placeholder="m@example.com" autocomplete="username"></div>
     <div class="frow"><label>ពាក្យសម្ងាត់</label><input id="loginPass" type="password" autocomplete="current-password"></div>
     <button class="save" id="loginSubmit">ចូល</button>
-    <div class="authfoot"><button class="authlink" id="loginBack">← ត្រឡប់ក្រោយ</button></div>
+    <div class="authfoot" style="display:flex; justify-content:space-between; align-items:center">
+      <button class="authlink" id="loginBack">← ត្រឡប់ក្រោយ</button>
+      <button class="authlink" id="loginForgot">ភ្លេចពាក្យសម្ងាត់?</button>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="s-forgot">
+  <div class="authwrap">
+    <div class="authhead" style="text-align:left">
+      <b>ស្តារពាក្យសម្ងាត់</b>
+      <p>យើងនឹងផ្ញើតំណកំណត់ពាក្យសម្ងាត់ថ្មីទៅអ៊ីមែលរបស់អ្នក</p>
+    </div>
+    <div class="autherr" id="forgotErr"></div>
+    <div class="authmsg" id="forgotMsg"></div>
+    <div class="frow"><label>អ៊ីមែល</label><input id="forgotEmail" type="email" placeholder="m@example.com" autocomplete="username"></div>
+    <button class="save" id="forgotSubmit">ផ្ញើតំណស្តារ</button>
+    <div class="authfoot"><button class="authlink" id="forgotBack">← ត្រឡប់ទៅការចូល</button></div>
+  </div>
+</section>
+
+<section class="screen" id="s-newpass">
+  <div class="authwrap">
+    <div class="authhead" style="text-align:left">
+      <b>កំណត់ពាក្យសម្ងាត់ថ្មី</b>
+      <p>ត្រូវការយ៉ាងតិច ៦ តួអក្សរ</p>
+    </div>
+    <div class="autherr" id="npErr"></div>
+    <div class="frow"><label>ពាក្យសម្ងាត់ថ្មី</label><input id="npPass" type="password" autocomplete="new-password"></div>
+    <div class="frow"><label>បញ្ជាក់ម្តងទៀត</label><input id="npPass2" type="password" autocomplete="new-password"></div>
+    <button class="save" id="npSubmit">រក្សាទុកពាក្យសម្ងាត់</button>
   </div>
 </section>
 
@@ -740,8 +796,8 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
   <!-- ══════════ អេក្រង់ ១ · ដើម ══════════ -->
   <section class="screen" id="s-home">
     <div class="head">
-      <div class="ava">ស</div>
-      <div class="hi"><small id="greet">សួស្តី</small><b>សុខ មាន</b></div>
+      <button class="ava" id="hAv" aria-label="រូបតំណាង">ស</button>
+      <div class="hi"><small id="greet">សួស្តី</small><b id="uName">អ្នកភ្ញៀវ</b></div>
       <button class="hbtn" id="bNoti" aria-label="ការជូនដំណឹង"><svg width="19" height="19" aria-hidden="true"><use href="#c-bell"></use></svg><i class="badge"></i></button>
       <button class="hbtn" id="tMoon" aria-label="ប្តូរផ្ទៃភ្លឺ-ងងឹត"><svg width="19" height="19" aria-hidden="true"><use href="#c-moon"></use></svg></button>
     </div>
@@ -813,8 +869,10 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
   <section class="screen" id="s-more">
     <div class="shead"><h1>ការកំណត់</h1></div>
     <div class="profile">
-      <div class="pav" id="pAv">ស</div>
-      <div><b id="pName">អ្នកភ្ញៀវ</b><small id="pEmail">ទិន្នន័យក្នុងម៉ាស៊ីន</small></div>
+      <button class="pav" id="pAv" aria-label="ប្តូររូបតំណាង">ស<span class="pavedit"><svg width="12" height="12" aria-hidden="true"><use href="#c-pencil"></use></svg></span></button>
+      <div class="pmid"><b id="pName">អ្នកភ្ញៀវ</b><small id="pEmail">ទិន្នន័យក្នុងម៉ាស៊ីន</small>
+        <button class="pnamebtn" id="bRename">ប្តូរឈ្មោះបង្ហាញ</button></div>
+      <input type="file" id="avFile" accept="image/*" hidden>
     </div>
     <div class="glabel">ការកំណត់ទូទៅ</div>
     <div class="group">
@@ -834,7 +892,7 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
         <span class="stxt">រូបិយប័ណ្ណ និងអត្រាប្តូរប្រាក់<small id="sRateSub"></small></span>
         <svg width="16" height="16" style="color:var(--soft)" aria-hidden="true"><use href="#c-chev"></use></svg>
       </button>
-      <button class="srow" data-soon="គ្រប់គ្រងប្រភេទ">
+      <button class="srow" id="rowCats">
         <span class="si"><svg width="17" height="17" aria-hidden="true"><use href="#c-tag"></use></svg></span>
         <span class="stxt">គ្រប់គ្រងប្រភេទ</span>
         <span class="sval num" id="sCats"></span>
@@ -846,10 +904,10 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
         <span class="sval" id="sRecur">០ ធាតុ</span>
         <svg width="16" height="16" style="color:var(--soft)" aria-hidden="true"><use href="#c-chev"></use></svg>
       </button>
-      <button class="srow" data-soon="ការប្តូរពណ៌កម្មវិធី">
+      <button class="srow" id="rowAccent">
         <span class="si"><svg width="17" height="17" aria-hidden="true"><use href="#c-palette"></use></svg></span>
         <span class="stxt">ពណ៌កម្មវិធី</span>
-        <span class="sval">ខៀវ Cobalt</span>
+        <span class="sval" id="sAccent"></span>
         <svg width="16" height="16" style="color:var(--soft)" aria-hidden="true"><use href="#c-chev"></use></svg>
       </button>
     </div>
@@ -1155,6 +1213,13 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
   <button class="save" id="reportShare" style="margin-top:var(--sp4)">ចែករំលែក / រក្សាទុក</button>
 </div>
 
+<div class="sheet" id="shAccent" role="dialog" aria-modal="true" aria-label="ពណ៌កម្មវិធី">
+  <div class="grip"></div>
+  <div class="stitle"><b>ពណ៌កម្មវិធី</b>
+    <button class="xbtn" data-close aria-label="បិទ"><svg width="16" height="16" aria-hidden="true"><use href="#c-x"></use></svg></button></div>
+  <div class="accgrid" id="accGrid"></div>
+</div>
+
 <div class="sheet" id="shRate" role="dialog" aria-modal="true" aria-label="រូបិយប័ណ្ណ និងអត្រាប្តូរប្រាក់">
   <div class="grip"></div>
   <div class="stitle"><b>រូបិយប័ណ្ណ</b>
@@ -1185,7 +1250,7 @@ let TODAY = fmtDateVal(new Date());                                    // កា
 let VIEW  = {y:new Date().getFullYear(), m:new Date().getMonth()};     // ខែដើម (ត្រូវជាខែបច្ចុប្បន្នជានិច្ច)
 let statsView = {y:VIEW.y, m:VIEW.m};                                  // ខែកំពុងរុករកក្នុងផ្ទាំងស្ថិតិ (ដាច់ដោយឡែកពី VIEW)
 
-const CATS = {
+const BUILTIN = {
   expense:[
     {id:'food',  n:'អាហារ',      i:'c-food', c:'#F0523F'},
     {id:'trans', n:'ដឹកជញ្ជូន',   i:'c-fuel', c:'#F59E0B'},
@@ -1208,7 +1273,41 @@ const CATS = {
     {id:'other2',    n:'ផ្សេងៗ',      i:'c-more',  c:'#94A3B8'}
   ]
 };
-const catOf = (t,id)=> (CATS[t]||[]).find(c=>c.id===id) || {n:'ផ្ទេរប្រាក់', i:'c-send', c:'#60A5FA'};
+
+/* ── ប្រភេទផ្ទាល់ខ្លួន ──
+   CATS ជាបញ្ជីដែលកម្មវិធីទាំងមូលប្រើ = ប្រភេទដើម (ដកអ្វីដែលលាក់) + ប្រភេទបន្ថែម
+   យើងកែក្នុងអារេដដែល (មិនប្តូរ reference) ដូច្នេះកន្លែងផ្សេងមិនចាំបាច់ដឹង */
+const CATS = {expense:[], income:[]};
+const CAT_ICONS=['c-food','c-fuel','c-cart','c-house','c-bill','c-heart','c-book','c-play',
+                 'c-salary','c-case','c-gift','c-bonus','c-investment','c-tip','c-parttime',
+                 'c-target','c-pin','c-cloud','c-tag','c-more'];
+const CAT_COLORS=['#F0523F','#F59E0B','#2563EB','#0EA5E9','#64748B','#EC4899','#14B8A6',
+                  '#8B5CF6','#0FA36B','#94A3B8','#C2BC0D','#0A71A8'];
+let catStore={add:{expense:[],income:[]}, hide:[]};
+const catKey = () => `mn_cats_${state.email||'guest'}`;
+function catsLoad(){
+  try{
+    const v=JSON.parse(localStorage.getItem(catKey())||'null');
+    if(v && v.add) catStore={add:{expense:v.add.expense||[], income:v.add.income||[]}, hide:v.hide||[]};
+    else catStore={add:{expense:[],income:[]}, hide:[]};
+  }catch(e){ catStore={add:{expense:[],income:[]}, hide:[]}; }
+  rebuildCats();
+}
+function catsSave(){ try{ localStorage.setItem(catKey(), JSON.stringify(catStore)); }catch(e){} }
+function rebuildCats(){
+  ['expense','income'].forEach(t=>{
+    const list=BUILTIN[t].filter(c=>!catStore.hide.includes(c.id))
+                         .concat(catStore.add[t]||[]);
+    CATS[t].length=0; CATS[t].push(...list);
+  });
+  const el=$('#sCats'); if(el) el.textContent=kh(CATS.expense.length+CATS.income.length)+' ប្រភេទ';
+}
+rebuildCats();
+// ប្រភេទដែលកំពុងប្រើ (សូម្បីលាក់ ឬលុប) នៅតែបង្ហាញឈ្មោះបានក្នុងបញ្ជីចាស់
+const allCatOf = (t,id)=> (CATS[t]||[]).find(c=>c.id===id)
+                        || (BUILTIN[t]||[]).find(c=>c.id===id)
+                        || ((catStore.add[t]||[]).find(c=>c.id===id));
+const catOf = (t,id)=> allCatOf(t,id) || {n:'ផ្ទេរប្រាក់', i:'c-send', c:'#60A5FA'};
 
 const state = {
   theme:'light', screen:'home', statKind:'expense', filter:'all', query:'',
@@ -1275,14 +1374,52 @@ function toast(msg){
 const buzz=n=>{ if(navigator.vibrate) navigator.vibrate(n); };
 
 /* ═══════════ ៣. ផ្ទៃ ភ្លឺ / ងងឹត ═══════════ */
+/* ═══ ពណ៌កម្មវិធី ═══
+   ផ្ទៃងងឹតត្រូវការពណ៌ភ្លឺជាងបន្តិច ដូច្នេះជម្រើសនីមួយៗមានគូពណ៌ ២ (light / dark) */
+const ACCENTS=[
+  {id:'cobalt', n:'ខៀវ',        l:['#2563EB','#60A5FA'], d:['#5B9DF5','#8FC4FF']},
+  {id:'violet', n:'ស្វាយ',       l:['#6D28D9','#A78BFA'], d:['#8B5CF6','#C4B5FD']},
+  {id:'teal',   n:'បៃតងសមុទ្រ',  l:['#0D9488','#5EEAD4'], d:['#2DD4BF','#99F6E4']},
+  {id:'emerald',n:'បៃតង',       l:['#059669','#6EE7B7'], d:['#34D399','#A7F3D0']},
+  {id:'rose',   n:'ផ្កាកុលាប',   l:['#BE123C','#FB7185'], d:['#F43F5E','#FDA4AF']},
+  {id:'amber',  n:'ទឹកក្រូច',    l:['#C2410C','#FBBF24'], d:['#F59E0B','#FCD34D']},
+  {id:'indigo', n:'ខៀវជ្រៅ',     l:['#4338CA','#818CF8'], d:['#6366F1','#A5B4FC']},
+  {id:'pink',   n:'ផ្កាឈូក',     l:['#DB2777','#F9A8D4'], d:['#EC4899','#F9A8D4']},
+  {id:'slate',  n:'ប្រផេះ',      l:['#334155','#94A3B8'], d:['#64748B','#CBD5E1']}
+];
+let accent='cobalt';
+try{ const a=localStorage.getItem('mn_accent'); if(a && ACCENTS.some(x=>x.id===a)) accent=a; }catch(e){}
+function applyAccent(){
+  const a=ACCENTS.find(x=>x.id===accent)||ACCENTS[0];
+  const pair = state.theme==='dark' ? a.d : a.l;
+  const r=document.documentElement.style;
+  r.setProperty('--brand',pair[0]);
+  r.setProperty('--brand2',pair[1]);
+  const meta=$('meta[name=theme-color]');
+  if(meta) meta.setAttribute('content', state.theme==='dark'? '#0C1220' : pair[0]);
+  const lbl=$('#sAccent'); if(lbl) lbl.textContent=a.n;
+}
+function renderAccents(){
+  $('#accGrid').innerHTML=ACCENTS.map(a=>`
+    <button class="accopt${a.id===accent?' on':''}" data-a="${a.id}">
+      <i style="background:linear-gradient(145deg,${a.l[0]},${a.l[1]})"></i>${a.n}
+    </button>`).join('');
+  $$('#accGrid .accopt').forEach(b=>b.onclick=()=>{
+    accent=b.dataset.a;
+    try{ localStorage.setItem('mn_accent',accent); }catch(e){}
+    applyAccent(); renderAccents(); refresh(); buzz(8);
+  });
+}
+$('#rowAccent').onclick=()=>{ renderAccents(); showSheet('#shAccent'); };
+
 function setTheme(t){
   state.theme=t;
   document.documentElement.dataset.theme=t;
   try{ localStorage.setItem('mn_theme',t); }catch(e){}
+  applyAccent();
   $('#tMoon').innerHTML=`<svg width="19" height="19" aria-hidden="true"><use href="#${t==='dark'?'c-sun':'c-moon'}"></use></svg>`;
   $('#swDark').classList.toggle('on',t==='dark');
   $('#swDark').setAttribute('aria-checked',t==='dark');
-  $('meta[name=theme-color]').setAttribute('content',t==='dark'?'#0B121C':'#2563EB');
 }
 setTheme(document.documentElement.dataset.theme==='dark'?'dark':'light');   // ធ្វើឱ្យ state + ប៊ូតុងស៊ីនឹងផ្ទៃដែលស្តារមកវិញ
 $('#tMoon').onclick=()=>setTheme(state.theme==='dark'?'light':'dark');
@@ -1393,11 +1530,33 @@ function cacheLoad(email){
   try{ return JSON.parse(localStorage.getItem(cacheKey(email))||'null'); }catch(e){ return null; }
 }
 
+/* ── ឈ្មោះបង្ហាញ និងរូបតំណាង (រក្សាក្នុងឧបករណ៍ តាមគណនីនីមួយៗ) ── */
+const profKey = k => `mn_${k}_${state.email||'guest'}`;
+function getProf(k){ try{ return localStorage.getItem(profKey(k))||''; }catch(e){ return ''; } }
+function setProf(k,v){ try{ v? localStorage.setItem(profKey(k),v) : localStorage.removeItem(profKey(k)); }catch(e){} }
+function defaultName(){
+  if(guestMode || !state.email) return 'អ្នកភ្ញៀវ';
+  return state.email.split('@')[0];
+}
+function displayName(){ return getProf('name') || defaultName(); }
+function paintAvatar(){
+  const img=getProf('avatar'), initial=displayName().trim().charAt(0).toUpperCase()||'ស';
+  [$('#hAv'), $('#pAv')].forEach(el=>{
+    if(!el) return;
+    el.classList.toggle('hasimg', !!img);
+    el.style.backgroundImage = img? `url(${img})` : '';
+    const edit=el.querySelector('.pavedit');
+    el.textContent = img? '' : initial;
+    if(edit) el.appendChild(edit);
+  });
+}
 function updateProfileUI(){
   const authed=!guestMode && !!state.email;
-  $('#pName').textContent = authed? state.email : 'អ្នកភ្ញៀវ';
-  $('#pEmail').textContent = authed? 'បានចូលគណនី' : 'ទិន្នន័យក្នុងម៉ាស៊ីន (Guest)';
-  $('#pAv').textContent = authed? state.email.charAt(0).toUpperCase() : 'ស';
+  const nm=displayName();
+  $('#pName').textContent = nm;
+  $('#uName').textContent = nm;
+  $('#pEmail').textContent = authed? state.email : 'ទិន្នន័យក្នុងម៉ាស៊ីន (Guest)';
+  paintAvatar();
   $('#bOut').style.display = authed? 'flex':'none';
   $('#rowLogin').style.display = authed? 'none':'flex';
   // លាក់ចំណងជើង + ប្រអប់ទទេ ពេលគ្មានជួរណាមួយបង្ហាញក្នុងក្រុម "គណនី"
@@ -1417,6 +1576,7 @@ async function enterApp(){
   else if(!state.wallets.length) await addWallet({n:'សាច់ប្រាក់', sub:'កាបូបដៃ', style:'zest', color:'#8FA82A', open:0}, true);
   await applyRecurring();
   cacheSave();
+  catsLoad();          // ប្រភេទផ្ទាល់ខ្លួនរក្សាតាមគណនីនីមួយៗ
   updateProfileUI();
   go('home');
   refresh();
@@ -1432,6 +1592,39 @@ function showAuthScreen(name){
 }
 $('#splashStart').onclick=()=>showAuthScreen('welcome');
 $('#splashGuest').onclick=()=>$('#wGuest').click();
+
+/* ── ស្តារពាក្យសម្ងាត់ ── */
+$('#loginForgot').onclick=()=>{
+  $('#forgotEmail').value=$('#loginEmail').value.trim();
+  showAuthScreen('forgot');
+};
+$('#forgotBack').onclick=()=>showAuthScreen('login');
+$('#forgotSubmit').onclick=async()=>{
+  const email=$('#forgotEmail').value.trim();
+  const err=$('#forgotErr'), msg=$('#forgotMsg');
+  err.classList.remove('show'); msg.classList.remove('show');
+  if(!email){ err.textContent='សូមបញ្ចូលអ៊ីមែល'; err.classList.add('show'); return; }
+  const b=$('#forgotSubmit'); b.disabled=true; b.textContent='កំពុងផ្ញើ...';
+  // redirectTo ត្រូវតែស្ថិតក្នុងបញ្ជី Redirect URLs របស់ Supabase
+  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+  b.disabled=false; b.textContent='ផ្ញើតំណស្តារ';
+  if(error){ err.textContent=error.message; err.classList.add('show'); return; }
+  msg.textContent='បានផ្ញើរួច — សូមពិនិត្យអ៊ីមែល (រួមទាំងថត Spam)';
+  msg.classList.add('show');
+};
+$('#npSubmit').onclick=async()=>{
+  const p1=$('#npPass').value, p2=$('#npPass2').value, err=$('#npErr');
+  err.classList.remove('show');
+  if(p1.length<6){ err.textContent='ពាក្យសម្ងាត់ត្រូវការយ៉ាងតិច ៦ តួអក្សរ'; err.classList.add('show'); return; }
+  if(p1!==p2){ err.textContent='ពាក្យសម្ងាត់ទាំងពីរមិនដូចគ្នាទេ'; err.classList.add('show'); return; }
+  const b=$('#npSubmit'); b.disabled=true; b.textContent='កំពុងរក្សាទុក...';
+  const {error}=await sb.auth.updateUser({password:p1});
+  b.disabled=false; b.textContent='រក្សាទុកពាក្យសម្ងាត់';
+  if(error){ err.textContent=error.message; err.classList.add('show'); return; }
+  recovering=false;
+  toast('បានប្តូរពាក្យសម្ងាត់រួចរាល់');
+  await enterApp();
+};
 $('#wSignin').onclick=()=>{ $('#loginErr').classList.remove('show'); showAuthScreen('login'); };
 $('#wSignup').onclick=()=>{ $('#signupErr').classList.remove('show'); showAuthScreen('signup'); };
 $('#loginBack').onclick=()=>showAuthScreen('welcome');
@@ -1481,6 +1674,40 @@ $('#wGoogle').onclick=async()=>{
   if(error) toast('ការចូលដោយ Google បរាជ័យ ('+error.message+')');
 };
 
+/* ── ប្តូររូបតំណាង ── */
+$('#pAv').onclick=()=>$('#avFile').click();
+$('#hAv').onclick=()=>{ go('more'); setTimeout(()=>$('#avFile').click(),260); };
+$('#avFile').onchange=e=>{
+  const f=e.target.files&&e.target.files[0]; if(!f) return;
+  if(!/^image\//.test(f.type)){ toast('សូមជ្រើសឯកសាររូបភាព'); return; }
+  const rd=new FileReader();
+  rd.onload=()=>{
+    const im=new Image();
+    im.onload=()=>{
+      // កាត់ជារាងការ៉េ ហើយបង្រួមមក ២៥៦px ដើម្បីកុំឱ្យលើសកូតា localStorage
+      const S=256, c=document.createElement('canvas'); c.width=c.height=S;
+      const ctx=c.getContext('2d');
+      const side=Math.min(im.width,im.height);
+      ctx.drawImage(im,(im.width-side)/2,(im.height-side)/2,side,side,0,0,S,S);
+      try{
+        setProf('avatar', c.toDataURL('image/jpeg',.82));
+        paintAvatar(); toast('បានប្តូររូបតំណាង');
+      }catch(err){ toast('រូបភាពធំពេក សូមសាកល្បងរូបផ្សេង'); }
+    };
+    im.onerror=()=>toast('មិនអាចអានរូបភាពបានទេ');
+    im.src=rd.result;
+  };
+  rd.readAsDataURL(f);
+  e.target.value='';
+};
+$('#bRename').onclick=()=>{
+  const cur=displayName();
+  const v=prompt('ឈ្មោះបង្ហាញ៖', cur);
+  if(v===null) return;
+  setProf('name', v.trim()===defaultName()? '' : v.trim());
+  updateProfileUI(); toast('បានប្តូរឈ្មោះបង្ហាញ');
+};
+
 $('#rowLogin').onclick=()=>{ document.body.dataset.auth=''; showAuthScreen('welcome'); };
 $('#bOut').onclick=async()=>{
   if(!confirm('ចាកចេញពីគណនី? ទិន្នន័យក្នុងម៉ាស៊ីននឹងត្រូវលុប (នៅតែមានលើ server)')) return;
@@ -1492,7 +1719,16 @@ $('#bOut').onclick=async()=>{
 };
 
 // ---------- ស្តាប់ស្ថានភាពគណនី Supabase — ប្រភពសច្ចភាពតែមួយសម្រាប់ "ចូល ឬអត់" ----------
+let recovering=false;
 sb.auth.onAuthStateChange(async(event,session)=>{
+  // តំណពីអ៊ីមែលស្តារ → បង្ហាញអេក្រង់កំណត់ពាក្យសម្ងាត់ថ្មី មិនចូល app ភ្លាមទេ
+  if(event==='PASSWORD_RECOVERY'){
+    recovering=true;
+    if(session && session.user) state.email=session.user.email;
+    document.body.dataset.auth=''; showAuthScreen('newpass');
+    return;
+  }
+  if(recovering) return;
   if(session && session.user){
     guestMode=false; state.email=session.user.email; localStorage.removeItem('mn_guest');
     if(!_entered) await enterApp();
