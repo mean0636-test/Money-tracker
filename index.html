@@ -444,14 +444,44 @@ html[data-theme="dark"] .nb.on{background:color-mix(in srgb,var(--brand) 26%,tra
 
 /* ── ១៨. ការចូលគណនី (Auth) ── */
 body:not([data-auth="in"]) .nav, body:not([data-auth="in"]) .fab, body:not([data-auth="in"]) .mini{display:none !important;}
-.authwrap{min-height:100vh; min-height:100dvh; display:flex; flex-direction:column; padding:var(--sp6) var(--sp5) calc(var(--sp6) + var(--safe)); max-width:460px; margin:0 auto; box-sizing:border-box;}
-.authwrap.hero{background:linear-gradient(160deg,var(--brand),var(--brand2)); color:#fff; align-items:center; justify-content:center; text-align:center; gap:var(--sp5);}
+/* ផ្ទាំងចូលគណនីត្រូវពេញអេក្រង់ ហើយតម្រឹមចំកណ្តាលជានិច្ច
+   svh = កម្ពស់អេក្រង់តូចបំផុត ដូច្នេះរបារ URL លេចឡើង-លាក់ មិនធ្វើឱ្យរង្គើ */
+body:not([data-auth="in"]) .phone{padding-bottom:0;}
+.authwrap{min-height:100vh; min-height:100svh; display:flex; flex-direction:column;
+  justify-content:center; padding:var(--sp6) var(--sp5) calc(var(--sp6) + var(--safe));
+  max-width:460px; margin:0 auto; box-sizing:border-box;}
+
+/* ── ផ្ទាំងដំបូង ── */
+.hero{position:relative; overflow:hidden; box-sizing:border-box;
+  min-height:100vh; min-height:100svh;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:var(--sp8); text-align:center; color:#fff;
+  padding:var(--sp8) var(--sp6) calc(var(--sp6) + var(--safe));
+  background:linear-gradient(160deg,#1E3FA8,var(--brand) 52%,var(--brand2));}
+.hero::before,.hero::after{content:''; position:absolute; border-radius:50%; pointer-events:none;}
+.hero::before{width:78vmax; height:78vmax; top:-44vmax; right:-30vmax; background:rgba(255,255,255,.085);}
+.hero::after{width:56vmax; height:56vmax; bottom:-32vmax; left:-26vmax; background:rgba(255,255,255,.06);}
+.hero>*{position:relative; z-index:1; width:100%; max-width:330px;}
+.herologo{width:88px; height:88px; margin:0 auto var(--sp5); border-radius:28px;
+  background:#fff; color:var(--brand); display:flex; align-items:center; justify-content:center;
+  box-shadow:0 22px 46px -18px rgba(0,0,0,.55); animation:pop .6s var(--spring) both;}
+.hero h1{font-size:26px; font-weight:700; margin:0 0 8px; letter-spacing:-.01em;}
+.hero .sub{margin:0; font-size:13.5px; line-height:1.95; opacity:.85;}
+.herofeat{display:flex; flex-direction:column; gap:var(--sp4); text-align:left;}
+.hfrow{display:flex; align-items:center; gap:var(--sp3);}
+.hfrow b{display:block; font-size:14px; font-weight:600;}
+.hfrow small{font-size:11.5px; opacity:.78; line-height:1.65;}
+.hfi{width:40px; height:40px; flex:0 0 40px; border-radius:14px; background:rgba(255,255,255,.16);
+  display:flex; align-items:center; justify-content:center;}
+.herobtns{display:flex; flex-direction:column; gap:var(--sp2);}
+.herobtn{background:#fff !important; color:var(--brand) !important;
+  box-shadow:0 16px 34px -14px rgba(0,0,0,.5) !important;}
+.herolink{color:rgba(255,255,255,.85) !important; padding:var(--sp3) 0;}
 .authlogo{width:64px; height:64px; border-radius:20px; background:rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:700;}
 .authwrap h1{font-size:22px; font-weight:700; margin:0;}
 .authwrap p{margin:0; font-size:13.5px; opacity:.85; max-width:280px;}
 .authwrap .save{width:100%;}
-.authcard{margin-top:auto; display:flex; flex-direction:column; gap:var(--sp3); width:100%;}
-.herocard{width:100%; display:flex; flex-direction:column; gap:var(--sp3); margin-top:auto;}
+.authcard{display:flex; flex-direction:column; gap:var(--sp3); width:100%;}
 .authhead{text-align:center; margin-bottom:var(--sp5);}
 .authhead b{display:block; font-size:20px; font-weight:700; margin-top:var(--sp3);}
 .authhead p{margin:4px 0 0; font-size:13px; color:var(--soft);}
@@ -482,6 +512,19 @@ body:not([data-auth="in"]) .nav, body:not([data-auth="in"]) .fab, body:not([data
 .swatch.on{border-color:var(--ink); box-shadow:0 0 0 2px var(--card);}
 .hint{font-size:12px; color:var(--soft); text-align:center; padding:var(--sp3) 0;}
 .dbtn{width:100%; border:none; border-radius:var(--r-md); padding:14px; cursor:pointer; background:var(--sink); color:var(--expense); font-size:14px; font-weight:600; margin-top:var(--sp2);}
+
+/* ── ក្បាលកាបូបក្នុងបញ្ជីប្រតិបត្តិការ ── */
+.walbanner{align-items:center; gap:var(--sp3); margin:0 var(--sp5) var(--sp4);
+  padding:var(--sp4); border-radius:var(--r-lg); color:#fff;}
+.walbanner .wbi{width:38px; height:38px; flex:0 0 38px; border-radius:13px;
+  background:rgba(255,255,255,.2); display:flex; align-items:center; justify-content:center;}
+.walbanner .wbmid{flex:1; min-width:0;}
+.walbanner .wbmid b{display:block; font-size:14.5px; font-weight:600;}
+.walbanner .wbmid small{font-size:12px; opacity:.85; font-family:var(--num);}
+.walbanner .wbx{width:30px; height:30px; border:none; border-radius:10px; cursor:pointer;
+  background:rgba(255,255,255,.2); color:inherit; display:flex; align-items:center; justify-content:center;}
+.wedit{width:30px; height:30px; flex:0 0 30px; border-radius:10px; margin-left:var(--sp2);
+  background:var(--sink); color:var(--soft); display:flex; align-items:center; justify-content:center;}
 
 /* ── ទីតាំង ── */
 .locrow{display:flex; align-items:center; gap:var(--sp2); flex:1; min-width:0;}
@@ -604,19 +647,38 @@ body:not([data-auth="in"]) .nav, body:not([data-auth="in"]) .fab, body:not([data
 
 <!-- ══════════ ការចូលគណនី ══════════ -->
 <section class="screen on" id="s-splash">
-  <div class="authwrap hero">
-    <div class="authlogo">៛</div>
-    <h1>Money Note</h1>
-    <p>សៀវភៅចំណូល-ចំណាយ សម្រាប់គ្រប់គ្រងលុយកាក់ប្រចាំថ្ងៃ</p>
-    <div class="herocard">
-      <button class="save" id="splashStart">ចាប់ផ្តើម</button>
+  <div class="hero">
+    <div class="herotop">
+      <div class="herologo">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+          <rect x="3" y="6.5" width="18" height="13" rx="3.5"/>
+          <path d="M6 6.5V5.4A2 2 0 0 1 8.3 3.4l9 1.6"/>
+          <circle cx="16.5" cy="13" r="1.6" fill="currentColor" stroke="none"/>
+        </svg>
+      </div>
+      <h1>Money Note</h1>
+      <p class="sub">សៀវភៅចំណូល-ចំណាយ<br>សម្រាប់គ្រប់គ្រងលុយកាក់ប្រចាំថ្ងៃ</p>
+    </div>
+
+    <div class="herofeat">
+      <div class="hfrow"><span class="hfi"><svg width="18" height="18" aria-hidden="true"><use href="#c-plus"></use></svg></span>
+        <span><b>កត់ត្រារហ័ស</b><small>បញ្ចូលច្រើនមុខក្នុងម្តង ជាមួយម៉ាស៊ីនគិតលេខ</small></span></div>
+      <div class="hfrow"><span class="hfi"><svg width="18" height="18" aria-hidden="true"><use href="#c-chart"></use></svg></span>
+        <span><b>មើលឃើញច្បាស់</b><small>ស្ថិតិ ថវិកា និងនិន្នាការប្រចាំខែ</small></span></div>
+      <div class="hfrow"><span class="hfi"><svg width="18" height="18" aria-hidden="true"><use href="#c-cloud"></use></svg></span>
+        <span><b>មានសុវត្ថិភាព</b><small>រក្សាទុកលើ server និងប្រើ offline បាន</small></span></div>
+    </div>
+
+    <div class="herobtns">
+      <button class="save herobtn" id="splashStart">ចាប់ផ្តើម</button>
+      <button class="authlink herolink" id="splashGuest">ប្រើដោយមិនចូលគណនី</button>
     </div>
   </div>
 </section>
 
 <section class="screen" id="s-welcome">
   <div class="authwrap">
-    <div class="authhead" style="margin-top:auto">
+    <div class="authhead">
       <div class="authlogo" style="background:color-mix(in srgb,var(--brand) 14%,transparent); color:var(--brand); margin:0 auto">៛</div>
       <b>សូមស្វាគមន៍</b>
       <p>ចូល ឬបង្កើតគណនី ដើម្បីរក្សាទុកទិន្នន័យរបស់អ្នកឱ្យមានសុវត្ថិភាព</p>
@@ -633,7 +695,7 @@ body:not([data-auth="in"]) .nav, body:not([data-auth="in"]) .fab, body:not([data
 
 <section class="screen" id="s-login">
   <div class="authwrap">
-    <div class="authhead" style="text-align:left; margin-top:var(--sp6)">
+    <div class="authhead" style="text-align:left">
       <b>ចូលគណនី</b>
       <p>បញ្ចូលអ៊ីមែល និងពាក្យសម្ងាត់របស់អ្នក</p>
     </div>
@@ -647,7 +709,7 @@ body:not([data-auth="in"]) .nav, body:not([data-auth="in"]) .fab, body:not([data
 
 <section class="screen" id="s-signup">
   <div class="authwrap">
-    <div class="authhead" style="text-align:left; margin-top:var(--sp6)">
+    <div class="authhead" style="text-align:left">
       <b>បង្កើតគណនីថ្មី</b>
       <p>ត្រូវការយ៉ាងតិច ៦ តួអក្សរសម្រាប់ពាក្យសម្ងាត់</p>
     </div>
@@ -855,7 +917,12 @@ body:not([data-auth="in"]) .nav, body:not([data-auth="in"]) .fab, body:not([data
   <section class="screen" id="s-all">
     <div class="shead">
       <button class="hbtn" id="bBack" aria-label="ត្រឡប់ក្រោយ"><svg width="19" height="19" aria-hidden="true"><use href="#c-back"></use></svg></button>
-      <h1>ប្រតិបត្តិការទាំងអស់<small id="allCount"></small></h1>
+      <h1 id="allTitle">ប្រតិបត្តិការទាំងអស់<small id="allCount"></small></h1>
+    </div>
+    <div class="walbanner" id="walBanner" style="display:none">
+      <span class="wbi"><svg width="18" height="18" aria-hidden="true"><use href="#c-wallet"></use></svg></span>
+      <span class="wbmid"><b id="wbName"></b><small id="wbBal"></small></span>
+      <button class="wbx" id="wbClear" aria-label="មើលកាបូបទាំងអស់"><svg width="15" height="15" aria-hidden="true"><use href="#c-x"></use></svg></button>
     </div>
     <div class="searchbar">
       <svg width="18" height="18" aria-hidden="true"><use href="#c-search"></use></svg>
@@ -1145,7 +1212,7 @@ const catOf = (t,id)=> (CATS[t]||[]).find(c=>c.id===id) || {n:'ផ្ទេរ�
 
 const state = {
   theme:'light', screen:'home', statKind:'expense', filter:'all', query:'',
-  email:null, budget:0, day:null,
+  email:null, budget:0, day:null, walFilter:null,
   // រូបិយប័ណ្ណ៖ ទឹកប្រាក់រក្សាទុកជា "រៀល" ជានិច្ច — display/rate ប៉ះពាល់តែការបង្ហាញ
   display:'KHR', rate:4100,
   wallets:[], txns:[], goals:[], debts:[], recurring:[],
@@ -1364,6 +1431,7 @@ function showAuthScreen(name){
   document.getElementById('s-'+name).classList.add('on');
 }
 $('#splashStart').onclick=()=>showAuthScreen('welcome');
+$('#splashGuest').onclick=()=>$('#wGuest').click();
 $('#wSignin').onclick=()=>{ $('#loginErr').classList.remove('show'); showAuthScreen('login'); };
 $('#wSignup').onclick=()=>{ $('#signupErr').classList.remove('show'); showAuthScreen('signup'); };
 $('#loginBack').onclick=()=>showAuthScreen('welcome');
@@ -1783,10 +1851,12 @@ function renderAll(){
   const rows=state.txns
     .filter(t=>state.filter==='all'||t.t===state.filter)
     .filter(t=>!state.day || t.d===state.day)
+    .filter(t=>!state.walFilter || t.w===state.walFilter || t.w2===state.walFilter)
     .filter(t=>!q || t.n.toLowerCase().includes(q) || catOf(t.t,t.cat).n.includes(q)
                   || (t.loc||'').toLowerCase().includes(q))
     .sort(byDate);
   $('#allCount').textContent=`${kh(rows.length)} ធាតុ`;
+  renderWalBanner();
   const box=$('#alllist');
   if(!rows.length){
     box.innerHTML=`<div class="empty"><svg width="34" height="34" aria-hidden="true"><use href="#c-search"></use></svg>
@@ -1953,9 +2023,13 @@ function renderWallets(){
       <span class="wdot" style="background:${w.color}"><svg width="19" height="19" aria-hidden="true"><use href="#c-wallet"></use></svg></span>
       <span class="mid"><b>${w.n}</b><small>ចូល ${moneyNum(f.i)} · ចេញ ${moneyNum(f.o)}</small></span>
       <span class="amt">${money(walBalance(w.id))}</span>
+      <span class="wedit" data-w="${w.id}" role="button" tabindex="0" aria-label="កែកាបូប ${w.n}"><svg width="16" height="16" aria-hidden="true"><use href="#c-pencil"></use></svg></span>
     </button>`;
   }).join('') : `<div class="hint">មិនទាន់មានកាបូបទេ — ចុច ＋ ខាងលើ</div>`;
-  $$('#wlist .wrow').forEach(b=>b.onclick=()=>openWalletSheet(walOf(b.dataset.w)));
+  $$('#wlist .wrow').forEach(b=>b.onclick=()=>openWalTxns(b.dataset.w));
+  $$('#wlist .wedit').forEach(b=>b.onclick=e=>{
+    e.stopPropagation(); openWalletSheet(walOf(b.dataset.w));
+  });
 
   $('#glist').innerHTML=state.goals.length ? state.goals.map(g=>{
     const p=Math.min(100,g.tgt?g.now/g.tgt*100:0);
@@ -2311,9 +2385,26 @@ function go(name){
   }
   window.scrollTo({top:0, behavior:'instant'});
 }
-$$('.nb').forEach(b=>b.onclick=()=>go(b.dataset.s));
-$('#bAll').onclick=()=>go('all');
-$('#bBack').onclick=()=>go('home');
+$$('.nb').forEach(b=>b.onclick=()=>{ state.walFilter=null; go(b.dataset.s); });
+$('#bAll').onclick=()=>{ state.walFilter=null; go('all'); };
+/* ── បើកបញ្ជីប្រតិបត្តិការសម្រាប់កាបូបមួយ (null = ទាំងអស់) ── */
+function openWalTxns(wid){
+  state.walFilter = wid || null;
+  state.day=null; state.filter='all'; state.query=''; $('#q').value='';
+  $$('#filters .chip').forEach(x=>x.classList.toggle('on', x.dataset.f==='all'));
+  go('all');
+}
+function renderWalBanner(){
+  const w = state.walFilter && state.wallets.find(x=>x.id===state.walFilter);
+  const el=$('#walBanner');
+  $('#allTitle').childNodes[0].nodeValue = w? 'ប្រតិបត្តិការតាមកាបូប' : 'ប្រតិបត្តិការទាំងអស់';
+  if(!w){ el.style.display='none'; return; }
+  el.setAttribute('style', cardStyle(w.color)+'display:flex;');
+  $('#wbName').textContent=w.n;
+  $('#wbBal').textContent=money(walBalance(w.id));
+}
+$('#wbClear').onclick=()=>{ state.walFilter=null; renderWalBanner(); renderAll(); };
+$('#bBack').onclick=()=>{ state.walFilter=null; go('home'); };
 $$('.qbtn').forEach(b=>b.onclick=()=>{
   const q=b.dataset.q;
   if(q==='stats')  return go('stats');
