@@ -1,0 +1,2876 @@
+<!DOCTYPE html>
+<html lang="km" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2563EB">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<title>Money Note</title>
+<script>/* ស្តារផ្ទៃភ្លឺ/ងងឹតមុនគូរអេក្រង់ — កុំឱ្យភ្លឺភ្លែតពណ៌ */
+try{
+  var _t=localStorage.getItem('mn_theme');
+  if(!_t) _t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';
+  document.documentElement.dataset.theme=_t;
+}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   គំរូ C · "Neo-banking" — ទម្រង់ពេញលេញ
+   ៤ អេក្រង់ស្នូល + សន្លឹកបញ្ចូល + បញ្ជីពេញ + ការកំណត់
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  --ground:#F1F5FB; --card:#FFFFFF; --ink:#131B29; --soft:#647082;
+  --line:#E2E8F2; --sink:#F5F8FC;
+  --brand:#2563EB; --brand2:#60A5FA; --zest:#D4F55C;
+  --income:#0FA36B; --expense:#F0523F;
+  --r-lg:28px; --r-md:18px; --r-sm:14px;
+  --sp2:8px; --sp3:12px; --sp4:16px; --sp5:20px; --sp6:24px; --sp8:32px;
+  --khmer:'Kantumruy Pro',sans-serif;
+  --num:'Space Grotesk',sans-serif;
+  --spring:cubic-bezier(.34,1.4,.5,1);
+  --shadow:0 2px 12px -8px rgba(19,27,41,.3);
+  --safe:env(safe-area-inset-bottom,0px);
+}
+html[data-theme="dark"]{
+  --ground:#0B121C; --card:#141C2A; --ink:#EAF1FB; --soft:#8DA0B8; --line:#223046;
+  --sink:#182333; --brand:#5B9DF5; --brand2:#8FC4FF; --income:#3DD69B; --expense:#FF7A66;
+  --shadow:0 2px 12px -8px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--khmer); font-size:15px; line-height:1.75;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+button,input,textarea{font-family:var(--khmer); color:inherit;}
+:focus-visible{outline:2.5px solid var(--brand); outline-offset:2px; border-radius:8px;}
+.phone{max-width:460px; margin:0 auto; padding-bottom:calc(140px + var(--safe));}
+.num{font-family:var(--num); font-weight:600; letter-spacing:-.01em;}
+
+/* ── ក្បាលអេក្រង់ដើម ── */
+.head{display:flex; align-items:center; gap:var(--sp3); padding:var(--sp6) var(--sp5) var(--sp4);}
+.ava{
+  width:42px; height:42px; border-radius:14px; flex:0 0 42px;
+  background:linear-gradient(140deg,var(--brand),var(--brand2));
+  display:flex; align-items:center; justify-content:center; color:#fff; font-weight:600;
+}
+.hi{flex:1; min-width:0;}
+.hi small{display:block; font-size:12px; color:var(--soft); line-height:1.4;}
+.hi b{font-size:15.5px; font-weight:600;}
+.hbtn{
+  width:40px; height:40px; border-radius:13px; border:none; cursor:pointer; position:relative;
+  background:var(--card); color:var(--ink); display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 10px -4px rgba(20,19,41,.2); transition:transform .2s var(--spring); flex:0 0 40px;
+}
+.hbtn:active{transform:scale(.9);}
+.hbtn .badge{
+  position:absolute; top:8px; right:9px; width:7px; height:7px; border-radius:50%;
+  background:var(--expense); box-shadow:0 0 0 2.5px var(--card);
+}
+
+/* ── ក្បាលអេក្រង់ផ្សេង ── */
+.shead{display:flex; align-items:center; gap:var(--sp3); padding:var(--sp6) var(--sp5) var(--sp4);}
+.shead h1{font-size:20px; font-weight:600; margin:0; flex:1; line-height:1.4;}
+.shead h1 small{display:block; font-size:11.5px; color:var(--soft); font-weight:400;}
+
+/* ── Signature ១ ៖ ជង់កាតកាបូប អូសបាន ── */
+.deck{
+  display:flex; gap:var(--sp3); overflow-x:auto; padding:var(--sp2) var(--sp5) var(--sp5);
+  scroll-snap-type:x mandatory; scrollbar-width:none;
+}
+.deck::-webkit-scrollbar{display:none;}
+.wcard{
+  flex:0 0 84%; scroll-snap-align:center; border-radius:var(--r-lg);
+  padding:var(--sp5); color:#fff; position:relative; overflow:hidden; border:none;
+  text-align:left; font-family:var(--khmer); cursor:pointer;
+  background:linear-gradient(145deg,var(--brand),var(--brand2));
+  box-shadow:0 18px 40px -18px rgba(58,47,224,.7);
+  transition:transform .3s var(--spring);
+}
+.wcard:active{transform:scale(.98);}
+.wcard.alt{background:linear-gradient(145deg,#14133A,#312B63); box-shadow:0 18px 40px -18px rgba(20,19,58,.7);}
+.wcard.zest{background:linear-gradient(145deg,#B9E03F,var(--zest)); color:#161B0A;
+  box-shadow:0 18px 40px -18px rgba(185,224,63,.6);}
+.wcard::after{
+  content:''; position:absolute; right:-40px; top:-60px; width:190px; height:190px;
+  border-radius:50%; background:rgba(255,255,255,.11);
+}
+.wtop{display:flex; justify-content:space-between; align-items:center; font-size:12.5px; opacity:.85;}
+.wnum{font-family:var(--num); font-size:34px; font-weight:600; letter-spacing:-.02em; margin-top:var(--sp3);}
+.wnum .cur{font-size:17px; opacity:.7; margin-left:4px;}
+.wfoot{display:flex; gap:var(--sp5); margin-top:var(--sp4); font-size:12px; opacity:.9;}
+.wfoot b{font-family:var(--num); font-weight:600; display:block; font-size:14px;}
+.dots{display:flex; gap:6px; justify-content:center; margin-top:-8px; padding-bottom:var(--sp4);}
+.dot{width:6px; height:6px; border-radius:50%; background:var(--line); transition:all .3s var(--spring);}
+.dot.on{width:20px; border-radius:9px; background:var(--brand);}
+
+/* ── សកម្មភាពរហ័ស ── */
+.quick{display:flex; gap:var(--sp3); padding:0 var(--sp5) var(--sp6);}
+.qbtn{
+  flex:1; background:var(--card); border:none; border-radius:var(--r-md);
+  padding:var(--sp4) var(--sp2); cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:7px;
+  color:var(--ink); font-size:11.5px; box-shadow:0 2px 12px -6px rgba(20,19,41,.25);
+  transition:transform .2s var(--spring);
+}
+.qbtn:active{transform:scale(.94);}
+.qi{
+  width:38px; height:38px; border-radius:12px; display:flex; align-items:center;
+  justify-content:center; background:color-mix(in srgb,var(--brand) 12%,transparent); color:var(--brand);
+}
+.qbtn:nth-child(2) .qi{background:color-mix(in srgb,var(--income) 14%,transparent); color:var(--income);}
+.qbtn:nth-child(3) .qi{background:color-mix(in srgb,var(--expense) 14%,transparent); color:var(--expense);}
+.qbtn:nth-child(4) .qi{background:color-mix(in srgb,var(--zest) 40%,transparent); color:#5B6B12;}
+html[data-theme="dark"] .qbtn:nth-child(4) .qi{color:var(--zest);}
+
+/* ── ថវិកា៖ រង្វង់វឌ្ឍនភាព ── */
+.budget{
+  margin:0 var(--sp5) var(--sp6); background:var(--card); border-radius:var(--r-lg);
+  padding:var(--sp5); display:flex; align-items:center; gap:var(--sp5);
+  box-shadow:0 4px 20px -12px rgba(20,19,41,.3); border:none; width:calc(100% - var(--sp5)*2);
+  cursor:pointer; text-align:left; transition:transform .2s var(--spring);
+}
+.budget:active{transform:scale(.985);}
+.ring{width:82px; height:82px; flex:0 0 82px; position:relative;}
+.ring svg{transform:rotate(-90deg);}
+.ring b{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-family:var(--num); font-size:17px; font-weight:600;
+}
+.bmid{flex:1; min-width:0;}
+.bmid small{font-size:11.5px; color:var(--soft); letter-spacing:.1em; text-transform:uppercase;}
+.bmid .bn{font-family:var(--num); font-size:22px; font-weight:600; line-height:1.4;}
+.bmid .bn i{font-family:var(--khmer); font-style:normal; font-size:13px; color:var(--soft); font-weight:400;}
+.bmid p{margin:2px 0 0; font-size:12.5px; color:var(--soft);}
+
+/* ── បញ្ជីប្រតិបត្តិការ ── */
+.sec{display:flex; justify-content:space-between; align-items:baseline; padding:0 var(--sp5) var(--sp3);}
+.sec b{font-size:15px; font-weight:600;}
+.sec button{background:none; border:none; font-size:12.5px; color:var(--brand); cursor:pointer; padding:4px;}
+.list{margin:0 var(--sp5); display:flex; flex-direction:column; gap:var(--sp2);}
+.daybar{
+  display:flex; justify-content:space-between; align-items:baseline;
+  padding:var(--sp4) 4px var(--sp2); font-size:12px; color:var(--soft);
+}
+.daybar .dsum{font-family:var(--num); font-size:12.5px;}
+.item{
+  background:var(--card); border-radius:var(--r-md); padding:var(--sp3) var(--sp4);
+  display:flex; align-items:center; gap:var(--sp3); width:100%; border:none; text-align:left;
+  box-shadow:var(--shadow); cursor:pointer;
+  animation:pop .4s var(--spring) both; transition:transform .18s var(--spring);
+}
+.item:active{transform:scale(.98);}
+.ti{
+  width:40px; height:40px; flex:0 0 40px; border-radius:13px;
+  display:flex; align-items:center; justify-content:center; color:#fff;
+}
+.mid{flex:1; min-width:0;}
+.mid b{display:block; font-size:14.5px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.mid small{font-size:11.5px; color:var(--soft);}
+.amt{font-family:var(--num); font-size:15px; font-weight:600; white-space:nowrap;}
+.up{color:var(--income);} .down{color:var(--expense);}
+.empty{
+  text-align:center; color:var(--soft); font-size:13px; padding:var(--sp8) var(--sp5);
+  background:var(--card); border-radius:var(--r-lg); box-shadow:var(--shadow);
+}
+.empty svg{opacity:.4; margin-bottom:var(--sp2);}
+.empty b{display:block; color:var(--ink); font-size:14.5px; font-weight:600; margin-bottom:2px;}
+
+/* ── ស្ថិតិ ── */
+.seg{
+  display:flex; gap:4px; margin:0 var(--sp5) var(--sp5); background:var(--card);
+  padding:5px; border-radius:16px; box-shadow:var(--shadow);
+}
+.seg button{
+  flex:1; border:none; background:none; padding:9px 0; border-radius:12px; cursor:pointer;
+  font-size:12.5px; color:var(--soft); transition:all .28s var(--spring);
+}
+.seg button.on{background:var(--brand); color:#fff;}
+.panel{
+  margin:0 var(--sp5) var(--sp5); background:var(--card); border-radius:var(--r-lg);
+  padding:var(--sp5); box-shadow:0 4px 20px -12px rgba(20,19,41,.3);
+}
+.donutwrap{display:flex; justify-content:center; position:relative; margin-bottom:var(--sp4);}
+.donutwrap svg{transform:rotate(-90deg);}
+.dcenter{
+  position:absolute; inset:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; text-align:center;
+}
+.dcenter small{font-size:11px; color:var(--soft); line-height:1.3;}
+.dcenter b{font-family:var(--num); font-size:21px; font-weight:600;}
+.legend{display:flex; flex-direction:column; gap:var(--sp3);}
+.lrow{display:flex; align-items:center; gap:var(--sp3); font-size:13px;}
+.ldot{width:10px; height:10px; border-radius:4px; flex:0 0 10px;}
+.lname{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.lbar{height:5px; border-radius:9px; background:var(--line); overflow:hidden; margin-top:5px;}
+.lbar i{display:block; height:100%; border-radius:9px; transition:width .7s var(--spring);}
+.lval{font-family:var(--num); font-size:12.5px; white-space:nowrap;}
+.lpct{font-family:var(--num); font-size:11px; color:var(--soft); width:34px; text-align:right;}
+.bars{display:flex; align-items:flex-end; gap:var(--sp3); height:132px; padding-top:var(--sp3);}
+.bar{flex:1; display:flex; flex-direction:column; align-items:center; gap:7px; height:100%; justify-content:flex-end;}
+.bar i{
+  width:100%; max-width:26px; border-radius:9px 9px 4px 4px; display:block;
+  background:linear-gradient(180deg,var(--brand),var(--brand2)); transition:height .7s var(--spring);
+}
+.bar.now i{background:linear-gradient(180deg,var(--zest),#B9E03F);}
+.bar span{font-size:10.5px; color:var(--soft);}
+.kpis{display:flex; gap:var(--sp3); margin:0 var(--sp5) var(--sp5);}
+.kpi{
+  flex:1; background:var(--card); border-radius:var(--r-md); padding:var(--sp4);
+  box-shadow:var(--shadow);
+}
+.kpi small{font-size:11px; color:var(--soft); display:block;}
+.kpi b{font-family:var(--num); font-size:18px; font-weight:600; display:block; line-height:1.5;}
+.kpi em{font-style:normal; font-size:11px; color:var(--soft);}
+
+/* ── កាបូប / គោលដៅ / បំណុល ── */
+.wrow{
+  display:flex; align-items:center; gap:var(--sp3); background:var(--card); width:100%;
+  border:none; border-radius:var(--r-md); padding:var(--sp4); box-shadow:var(--shadow);
+  cursor:pointer; text-align:left; transition:transform .18s var(--spring);
+}
+.wrow:active{transform:scale(.98);}
+.wdot{
+  width:42px; height:42px; flex:0 0 42px; border-radius:14px; color:#fff;
+  display:flex; align-items:center; justify-content:center;
+}
+.goal{
+  background:var(--card); border-radius:var(--r-md); padding:var(--sp4); box-shadow:var(--shadow);
+}
+.goal .gt{display:flex; align-items:baseline; gap:var(--sp2); font-size:14px; font-weight:500;}
+.goal .gt span{margin-left:auto; font-family:var(--num); font-size:12.5px; color:var(--soft);}
+.gbar{height:8px; border-radius:9px; background:var(--sink); overflow:hidden; margin-top:10px;}
+.gbar i{display:block; height:100%; border-radius:9px; background:linear-gradient(90deg,var(--brand),var(--brand2)); transition:width .7s var(--spring);}
+.gmeta{display:flex; justify-content:space-between; font-size:11.5px; color:var(--soft); margin-top:6px;}
+.gmeta b{font-family:var(--num); font-weight:600; color:var(--ink);}
+
+/* ── ការកំណត់ ── */
+.group{margin:0 var(--sp5) var(--sp5); background:var(--card); border-radius:var(--r-lg); overflow:hidden; box-shadow:var(--shadow);}
+.glabel{font-size:11px; color:var(--soft); letter-spacing:.1em; text-transform:uppercase; padding:0 var(--sp5) 8px; margin-top:var(--sp5);}
+.srow{
+  display:flex; align-items:center; gap:var(--sp3); padding:var(--sp3) var(--sp4);
+  width:100%; border:none; background:none; cursor:pointer; text-align:left;
+  border-bottom:1px solid var(--line); font-size:14px; transition:background .2s;
+}
+.srow:last-child{border-bottom:none;}
+.srow:active{background:var(--sink);}
+.si{
+  width:34px; height:34px; flex:0 0 34px; border-radius:11px; display:flex;
+  align-items:center; justify-content:center; background:var(--sink); color:var(--brand);
+}
+.srow .stxt{flex:1; min-width:0;}
+.srow .stxt small{display:block; font-size:11px; color:var(--soft); line-height:1.4;}
+.srow .sval{font-size:12px; color:var(--soft);}
+.sw{width:44px; height:26px; border-radius:99px; background:var(--line); position:relative; flex:0 0 44px; transition:background .3s;}
+.sw i{position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.25); transition:transform .3s var(--spring);}
+.sw.on{background:var(--brand);} .sw.on i{transform:translateX(18px);}
+.profile{
+  margin:0 var(--sp5) var(--sp5); background:linear-gradient(145deg,var(--brand),var(--brand2));
+  border-radius:var(--r-lg); padding:var(--sp5); color:#fff; display:flex; align-items:center; gap:var(--sp4);
+  box-shadow:0 18px 40px -20px rgba(58,47,224,.7);
+}
+.profile .pav{width:54px; height:54px; border-radius:18px; background:rgba(255,255,255,.2); display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:600; flex:0 0 54px;}
+.profile b{display:block; font-size:16px; font-weight:600;}
+.profile small{font-size:12px; opacity:.85;}
+
+/* ── ស្វែងរក + ចម្រោះ ── */
+.searchbar{display:flex; align-items:center; gap:var(--sp2); margin:0 var(--sp5) var(--sp4); background:var(--card); border-radius:var(--r-md); padding:0 var(--sp4); box-shadow:var(--shadow);}
+.searchbar svg{color:var(--soft); flex:0 0 18px;}
+.searchbar input{flex:1; border:none; background:none; padding:13px 0; font-size:14px; outline:none;}
+.chips{display:flex; gap:var(--sp2); overflow-x:auto; padding:0 var(--sp5) var(--sp4); scrollbar-width:none;}
+.chips::-webkit-scrollbar{display:none;}
+.chip{
+  border:none; background:var(--card); color:var(--soft); border-radius:99px; cursor:pointer;
+  padding:8px 15px; font-size:12.5px; white-space:nowrap; box-shadow:var(--shadow);
+  transition:all .25s var(--spring);
+}
+.chip.on{background:var(--brand); color:#fff;}
+
+/* ── FAB ចលនា spring + សកម្មភាពរាយ ── */
+.fab{
+  position:fixed; bottom:calc(104px + var(--safe)); right:calc(50% - 230px + 20px); width:58px; height:58px;
+  border-radius:20px; border:none; cursor:pointer; z-index:50;
+  background:linear-gradient(145deg,var(--brand),var(--brand2)); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 14px 30px -10px rgba(58,47,224,.75);
+  transition:transform .3s var(--spring), opacity .25s;
+}
+.fab.on{transform:rotate(45deg) scale(.92);}
+.fab.hide{opacity:0; pointer-events:none; transform:scale(.6);}
+@media(max-width:500px){.fab{right:20px;}}
+.mini{
+  position:fixed; right:calc(50% - 230px + 28px); z-index:49; display:flex; align-items:center; gap:10px;
+  opacity:0; transform:translateY(14px) scale(.8); pointer-events:none;
+  transition:all .32s var(--spring);
+}
+@media(max-width:500px){.mini{right:28px;}}
+.mini.show{opacity:1; transform:none; pointer-events:auto;}
+.mini span{
+  background:var(--card); padding:6px 12px; border-radius:10px; font-size:12.5px;
+  box-shadow:0 4px 14px -8px rgba(20,19,41,.4);
+}
+.mini button{
+  width:44px; height:44px; border-radius:15px; border:none; cursor:pointer; color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 8px 20px -8px rgba(20,19,41,.5);
+}
+#m1{bottom:calc(284px + var(--safe));} #m2{bottom:calc(230px + var(--safe));} #m3{bottom:calc(176px + var(--safe));}
+#m1 button{background:var(--income);} #m2 button{background:var(--expense);}
+#m3 button{background:linear-gradient(145deg,#14133A,#312B63);}
+
+/* ── របារក្រោមអណ្តែត ── */
+.nav{
+  position:fixed; bottom:calc(16px + var(--safe)); left:50%; transform:translateX(-50%);
+  width:min(420px,calc(100% - 32px)); background:var(--card);
+  border-radius:22px; display:flex; padding:6px; z-index:40;
+  box-shadow:0 14px 40px -14px rgba(20,19,41,.45);
+}
+.nb{
+  flex:1; border:none; background:none; cursor:pointer; padding:11px 0;
+  border-radius:16px; color:var(--soft); font-size:10.5px;
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  transition:all .3s var(--spring);
+}
+.nb.on{background:color-mix(in srgb,var(--brand) 12%,transparent); color:var(--brand);}
+html[data-theme="dark"] .nb.on{background:color-mix(in srgb,var(--brand) 26%,transparent); color:#fff;}
+
+/* ── សន្លឹករុញឡើង (sheet) ── */
+.scrim{
+  position:fixed; inset:0; background:rgba(12,11,24,.5); backdrop-filter:blur(3px);
+  opacity:0; pointer-events:none; transition:opacity .3s; z-index:60;
+}
+.scrim.on{opacity:1; pointer-events:auto;}
+.sheet{
+  position:fixed; bottom:0; left:50%; transform:translate(-50%,102%);
+  width:min(460px,100%); max-height:92vh; overflow-y:auto; z-index:70;
+  background:var(--ground); border-radius:var(--r-lg) var(--r-lg) 0 0;
+  padding:var(--sp3) var(--sp5) calc(var(--sp6) + var(--safe));
+  transition:transform .38s var(--spring); box-shadow:0 -10px 40px -12px rgba(0,0,0,.4);
+}
+.sheet.on{transform:translate(-50%,0);}
+.grip{width:42px; height:5px; border-radius:9px; background:var(--line); margin:var(--sp2) auto var(--sp4);}
+.stitle{display:flex; align-items:center; gap:var(--sp3); margin-bottom:var(--sp5);}
+.stitle b{flex:1; font-size:16px; font-weight:600;}
+.xbtn{width:34px; height:34px; border-radius:12px; border:none; background:var(--card); cursor:pointer; color:var(--soft); display:flex; align-items:center; justify-content:center;}
+
+/* ── ទម្រង់បញ្ចូល ── */
+.amtbox{
+  background:var(--card); border-radius:var(--r-lg); padding:var(--sp5); text-align:right;
+  box-shadow:var(--shadow); margin-bottom:var(--sp4);
+}
+.amtbox small{font-size:11px; color:var(--soft); display:block; text-align:left; letter-spacing:.1em; text-transform:uppercase;}
+.amtbox .big{font-family:var(--num); font-size:36px; font-weight:600; line-height:1.4; letter-spacing:-.02em; word-break:break-all;}
+.amtbox .big.income{color:var(--income);} .amtbox .big.expense{color:var(--expense);}
+.amtbox .big i{font-size:18px; opacity:.55; font-style:normal; margin-left:5px;}
+.catgrid{display:grid; grid-template-columns:repeat(4,1fr); gap:var(--sp3); margin-bottom:var(--sp5);}
+.cat{
+  border:none; background:var(--card); border-radius:var(--r-md); padding:var(--sp3) 4px; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:6px; font-size:10.5px; color:var(--soft);
+  box-shadow:var(--shadow); transition:all .22s var(--spring); line-height:1.35;
+}
+.cat i{width:36px; height:36px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#fff; transition:transform .22s var(--spring);}
+.cat.on{color:var(--ink); box-shadow:0 0 0 2px var(--brand), var(--shadow);}
+.cat.on i{transform:scale(1.08);}
+.frow{display:flex; align-items:center; gap:var(--sp3); background:var(--card); border-radius:var(--r-md); padding:var(--sp3) var(--sp4); margin-bottom:var(--sp3); box-shadow:var(--shadow);}
+.frow>label{font-size:12.5px; color:var(--soft); flex:0 0 78px;}
+.frow input{flex:1; border:none; background:none; font-size:14px; outline:none; min-width:0;}
+.frow .pick{margin-left:auto; display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;}
+.pk{border:none; background:var(--sink); color:var(--soft); border-radius:10px; padding:7px 12px; font-size:12px; cursor:pointer; transition:all .22s var(--spring);}
+.pk.on{background:var(--brand); color:#fff;}
+.pad{display:grid; grid-template-columns:repeat(4,1fr); gap:var(--sp2); margin-bottom:var(--sp4);}
+.pad button{
+  border:none; background:var(--card); border-radius:var(--r-sm); padding:15px 0; cursor:pointer;
+  font-family:var(--num); font-size:19px; font-weight:600; box-shadow:var(--shadow);
+  transition:transform .12s var(--spring);
+}
+.pad button:active{transform:scale(.92);}
+.pad button.op{color:var(--brand); font-size:17px;}
+.pad button.eq{background:var(--brand); color:#fff;}
+.save{
+  width:100%; border:none; border-radius:var(--r-md); padding:16px; cursor:pointer;
+  background:linear-gradient(145deg,var(--brand),var(--brand2)); color:#fff; font-size:15px; font-weight:600;
+  box-shadow:0 12px 26px -12px rgba(58,47,224,.8); transition:transform .2s var(--spring);
+}
+.save:active{transform:scale(.97);}
+.save.ghost{background:none; color:var(--expense); box-shadow:none; border:1px solid var(--line); margin-top:var(--sp3);}
+
+/* ── ព័ត៌មានលម្អិត ── */
+.dhero{text-align:center; padding:var(--sp4) 0 var(--sp5);}
+.dhero .ti{margin:0 auto var(--sp3); width:54px; height:54px; flex:none; border-radius:18px;}
+.dhero .big{font-family:var(--num); font-size:30px; font-weight:600;}
+.dhero p{margin:0; font-size:13px; color:var(--soft);}
+.kv{display:flex; justify-content:space-between; padding:11px var(--sp4); font-size:13.5px; border-bottom:1px solid var(--line);}
+.kv:last-child{border-bottom:none;}
+.kv span{color:var(--soft); font-size:12.5px;}
+
+/* ── ប្រតិទិន ── */
+.calh{display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--sp4);}
+.calh b{font-size:15px;}
+.calg{display:grid; grid-template-columns:repeat(7,1fr); gap:5px; text-align:center;}
+.calg .wd{font-size:10.5px; color:var(--soft); padding-bottom:4px;}
+.calg button{
+  border:none; background:none; border-radius:12px; padding:9px 0; cursor:pointer;
+  font-family:var(--num); font-size:13.5px; color:var(--ink); transition:all .2s var(--spring);
+}
+.calg button.on{background:var(--brand); color:#fff;}
+.calg button.mut{color:var(--soft); opacity:.4;}
+.calg button:disabled{opacity:.25; cursor:default;}
+
+/* ── សារជូនដំណឹង ── */
+.nrow{display:flex; gap:var(--sp3); padding:var(--sp3) 0; border-bottom:1px solid var(--line); font-size:13.5px;}
+.nrow:last-child{border-bottom:none;}
+.nrow .ni{width:36px; height:36px; flex:0 0 36px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#fff;}
+.nrow small{display:block; font-size:11.5px; color:var(--soft);}
+
+/* ── Toast ── */
+.toast{
+  position:fixed; bottom:calc(96px + var(--safe)); left:50%; transform:translate(-50%,20px);
+  background:var(--ink); color:var(--ground); padding:11px 20px; border-radius:14px;
+  font-size:13px; z-index:90; opacity:0; pointer-events:none; transition:all .32s var(--spring);
+  box-shadow:0 10px 30px -10px rgba(0,0,0,.5); max-width:88%; text-align:center;
+}
+.toast.on{opacity:1; transform:translate(-50%,0);}
+
+@keyframes pop{from{opacity:0; transform:translateY(16px) scale(.96);} to{opacity:1; transform:none;}}
+.screen{display:none;} .screen.on{display:block; animation:pop .34s var(--spring) both;}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important; transition-duration:.01ms !important;}}
+
+/* ── ១៨. ការចូលគណនី (Auth) ── */
+body:not([data-auth="in"]) .nav, body:not([data-auth="in"]) .fab, body:not([data-auth="in"]) .mini{display:none !important;}
+.authwrap{min-height:100vh; min-height:100dvh; display:flex; flex-direction:column; padding:var(--sp6) var(--sp5) calc(var(--sp6) + var(--safe)); max-width:460px; margin:0 auto; box-sizing:border-box;}
+.authwrap.hero{background:linear-gradient(160deg,var(--brand),var(--brand2)); color:#fff; align-items:center; justify-content:center; text-align:center; gap:var(--sp5);}
+.authlogo{width:64px; height:64px; border-radius:20px; background:rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:700;}
+.authwrap h1{font-size:22px; font-weight:700; margin:0;}
+.authwrap p{margin:0; font-size:13.5px; opacity:.85; max-width:280px;}
+.authwrap .save{width:100%;}
+.authcard{margin-top:auto; display:flex; flex-direction:column; gap:var(--sp3); width:100%;}
+.herocard{width:100%; display:flex; flex-direction:column; gap:var(--sp3); margin-top:auto;}
+.authhead{text-align:center; margin-bottom:var(--sp5);}
+.authhead b{display:block; font-size:20px; font-weight:700; margin-top:var(--sp3);}
+.authhead p{margin:4px 0 0; font-size:13px; color:var(--soft);}
+.authdiv{display:flex; align-items:center; gap:var(--sp3); margin:var(--sp2) 0; color:var(--soft); font-size:12px;}
+.authdiv::before,.authdiv::after{content:''; flex:1; height:1px; background:var(--line);}
+.gbtn{width:100%; border:1px solid var(--line); background:var(--card); border-radius:var(--r-md); padding:13px; display:flex; align-items:center; justify-content:center; gap:8px; font-size:14px; cursor:pointer; color:var(--ink);}
+.authfoot{text-align:center; font-size:13px; color:var(--soft); margin-top:var(--sp4);}
+.authlink{color:var(--brand); cursor:pointer; font-weight:600; background:none; border:none; font-size:13px; font-family:var(--khmer);}
+.autherr{background:color-mix(in srgb,var(--expense) 12%,transparent); color:var(--expense); border-radius:12px; padding:10px 14px; font-size:12.5px; margin-bottom:var(--sp3); display:none;}
+.autherr.show{display:block;}
+.authmsg{text-align:center; font-size:13px; color:var(--soft); margin-bottom:var(--sp3); display:none;}
+.authmsg.show{display:block;}
+
+/* ── ១៩. សោកម្មវិធី (PIN lock) ── */
+.lockwrap{position:fixed; inset:0; z-index:200; background:linear-gradient(160deg,var(--brand),var(--brand2)); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:var(--sp5); color:#fff; padding:var(--sp5);}
+.lockwrap.hide{display:none;}
+.lockdots{display:flex; gap:14px;}
+.lockdot{width:14px; height:14px; border-radius:50%; background:rgba(255,255,255,.3); transition:all .2s var(--spring);}
+.lockdot.on{background:#fff; transform:scale(1.15);}
+.lockpad{display:grid; grid-template-columns:repeat(3,64px); gap:var(--sp4); margin-top:var(--sp4);}
+.lockpad button{width:64px; height:64px; border-radius:50%; border:none; background:rgba(255,255,255,.14); color:#fff; font-size:22px; font-family:var(--num); cursor:pointer;}
+.lockpad button:active{background:rgba(255,255,255,.3);}
+.lockerr{font-size:13px; color:#FFD9D4; min-height:18px;}
+
+/* ── ២០. ជម្រើសពណ៌កាបូប ── */
+.swatches{display:flex; gap:8px; flex-wrap:wrap;}
+.swatch{width:32px; height:32px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0;}
+.swatch.on{border-color:var(--ink); box-shadow:0 0 0 2px var(--card);}
+.hint{font-size:12px; color:var(--soft); text-align:center; padding:var(--sp3) 0;}
+.dbtn{width:100%; border:none; border-radius:var(--r-md); padding:14px; cursor:pointer; background:var(--sink); color:var(--expense); font-size:14px; font-weight:600; margin-top:var(--sp2);}
+
+/* ── ទីតាំង ── */
+.locrow{display:flex; align-items:center; gap:var(--sp2); flex:1; min-width:0;}
+.locrow input{flex:1; min-width:0;}
+.pinbtn{width:38px; height:38px; flex:0 0 38px; border:none; border-radius:12px; cursor:pointer;
+  background:var(--sink); color:var(--soft); display:flex; align-items:center; justify-content:center;
+  transition:all .22s var(--spring);}
+.pinbtn.on{background:var(--brand); color:#fff;}
+.pinbtn:active{transform:scale(.9);}
+.txloc{display:inline-flex; align-items:center; gap:3px; max-width:150px;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:middle;
+  color:var(--brand);}
+.maplink{display:inline-flex; align-items:center; gap:5px; color:var(--brand);
+  text-decoration:none; font-size:12.5px;}
+
+/* ── អូសទៅឆ្វេងដើម្បីកែ/លុប ── */
+.swipe{position:relative; overflow:hidden; border-radius:var(--r-md);
+  box-shadow:var(--shadow); animation:pop .4s var(--spring) both;}
+.swipe .item{box-shadow:none;}
+.swipe .item{animation:none; position:relative; z-index:1;
+  transform:translateX(var(--sx,0px)); transition:transform .28s var(--spring);}
+.swipe.drag .item{transition:none;}
+.swipe.open{--sx:-128px;}
+.swipe .item:active{transform:translateX(var(--sx,0px)) scale(.99);}
+.swipeacts{position:absolute; top:0; right:0; bottom:0; width:128px; display:flex;}
+.swipeacts button{flex:1; border:none; cursor:pointer; color:#fff;
+  display:flex; align-items:center; justify-content:center;}
+.swipeacts .sEdit{background:var(--brand);}
+.swipeacts .sDel{background:var(--expense);}
+
+/* ── បញ្ចូលច្រើនមុខក្នុងម្តង ── */
+.batchwrap{margin:0 0 var(--sp4);}
+.batchlist{display:flex; flex-wrap:wrap; gap:var(--sp2); margin-bottom:var(--sp2);}
+.bchip{display:flex; align-items:center; gap:7px; background:var(--sink);
+  border-radius:12px; padding:7px 11px; font-size:12px;}
+.bchip b{font-family:var(--num); font-weight:600;}
+.bchip button{border:none; background:none; color:var(--soft); cursor:pointer;
+  font-size:15px; line-height:1; padding:0 2px;}
+.addmore{width:100%; border:1.5px dashed color-mix(in srgb,var(--brand) 45%,transparent);
+  background:color-mix(in srgb,var(--brand) 5%,transparent); color:var(--brand);
+  border-radius:var(--r-md); padding:13px; font-size:13px; cursor:pointer;
+  transition:transform .18s var(--spring);}
+.addmore:active{transform:scale(.98);}
+
+/* ── រូបិយប័ណ្ណក្នុងសន្លឹកបញ្ចូល ── */
+.amttop{display:flex; align-items:center; justify-content:space-between; gap:var(--sp3);}
+.curpick{display:flex; gap:5px;}
+.conv{font-family:var(--num); font-size:12px; color:var(--soft); margin-top:2px;}
+
+/* ── ទិដ្ឋភាពប្រតិទិន ── */
+.calmonth{display:flex; align-items:center; justify-content:space-between;
+  margin:0 var(--sp5) var(--sp3); gap:var(--sp3);}
+.calmonth b{font-size:15px; font-weight:600; flex:1; text-align:center;}
+.cgrid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin:0 var(--sp5) var(--sp4);}
+.cgrid .wd{font-size:10px; color:var(--soft); text-align:center; padding-bottom:2px;}
+.cday{background:var(--card); border:none; border-radius:12px; min-height:58px;
+  padding:6px 3px; cursor:pointer; display:flex; flex-direction:column;
+  align-items:center; gap:1px; box-shadow:var(--shadow); overflow:hidden;
+  transition:transform .18s var(--spring);}
+.cday:active{transform:scale(.93);}
+.cday .cn{font-family:var(--num); font-size:12.5px;}
+.cday .ci{font-size:8.5px; color:var(--income); font-family:var(--num);}
+.cday .ce{font-size:8.5px; color:var(--expense); font-family:var(--num);}
+.cday.today .cn{background:var(--brand); color:#fff; border-radius:8px; padding:0 6px;}
+.cday.sel{box-shadow:0 0 0 2px var(--brand), var(--shadow);}
+.cday.blank{background:none; box-shadow:none; cursor:default;}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="c-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="c-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 8h14l-3-3M20 16H6l3 3"/></symbol>
+<symbol id="c-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="c-hand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v10M8 7l4-4 4 4M5 15v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/></symbol>
+<symbol id="c-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 20h16M8 20v-7M12 20V6M16 20v-10"/></symbol>
+<symbol id="c-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6M10 19a2 2 0 0 0 4 0"/></symbol>
+<symbol id="c-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 11 12 4l9 7M5 10v10h14V10"/></symbol>
+<symbol id="c-wallet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 14h2"/></symbol>
+<symbol id="c-more" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></symbol>
+<symbol id="c-food" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 3v7a3 3 0 0 0 3 3v8M7 3v6M10 3v6M17 3c-1.5 2-2 4-2 7h4c0-3-.5-5-2-7ZM17 10v11"/></symbol>
+<symbol id="c-fuel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 21V5a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v16M4 21h11M6 10h7M17 8l2 2v8a1.5 1.5 0 0 0 3 0v-9l-2-3"/></symbol>
+<symbol id="c-salary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="12" rx="3"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="c-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></symbol>
+<symbol id="c-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+<symbol id="c-cart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 4h2l2.4 11h9.8L20 7H6"/><circle cx="9" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/></symbol>
+<symbol id="c-house" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 10.5 12 4l8 6.5M6 10v10h12V10M10 20v-5h4v5"/></symbol>
+<symbol id="c-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20s-7-4.6-7-9.4A3.8 3.8 0 0 1 12 8a3.8 3.8 0 0 1 7 2.6C19 15.4 12 20 12 20Z"/></symbol>
+<symbol id="c-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 5a2 2 0 0 1 2-2h11v18H6a2 2 0 0 0-2 2V5ZM8 3v14"/></symbol>
+<symbol id="c-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="m10.5 9 4.5 3-4.5 3V9Z"/></symbol>
+<symbol id="c-bill" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3ZM9 8h6M9 12h6"/></symbol>
+<symbol id="c-gift" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 9h18v4H3zM5 13v8h14v-8M12 9v12M12 9C10 9 8 8 8 6.5S10 4 12 9ZM12 9c2 0 4-1 4-2.5S14 4 12 9Z"/></symbol>
+<symbol id="c-case" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="7" width="18" height="13" rx="3"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/></symbol>
+<symbol id="c-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 12V4h8l9 9-8 8-9-9Z"/><circle cx="7.5" cy="7.5" r="1.2"/></symbol>
+<symbol id="c-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4 4"/></symbol>
+<symbol id="c-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 5 8 12l7 7"/></symbol>
+<symbol id="c-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 5 7 7-7 7"/></symbol>
+<symbol id="c-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+<symbol id="c-pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 20h4L20 8l-4-4L4 16v4ZM14 6l4 4"/></symbol>
+<symbol id="c-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></symbol>
+<symbol id="c-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+<symbol id="c-del" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 5h11a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9L2 12l7-7ZM12 9.5l5 5M17 9.5l-5 5"/></symbol>
+<symbol id="c-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+<symbol id="c-cloud" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M7 18a4 4 0 0 1 .5-8 5.5 5.5 0 0 1 10.4 1.5A3.5 3.5 0 0 1 17.5 18H7Z"/></symbol>
+<symbol id="c-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 4v11M8 11l4 4 4-4M4 20h16"/></symbol>
+<symbol id="c-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20V9M8 13l4-4 4 4M4 4h16"/></symbol>
+<symbol id="c-repeat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 9V7a3 3 0 0 1 3-3h10l-3-3M20 15v2a3 3 0 0 1-3 3H7l3 3"/></symbol>
+<symbol id="c-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c2.5 2.5 2.5 13 0 16M12 4c-2.5 2.5-2.5 13 0 16"/></symbol>
+<symbol id="c-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 11v5M12 8h.01"/></symbol>
+<symbol id="c-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M14 4H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7M17 8l4 4-4 4M21 12H10"/></symbol>
+<symbol id="c-bonus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3.5 14 8l5 .7-3.6 3.5.9 5-4.3-2.3L7.7 17l.9-5L5 8.7 10 8Z"/><path d="M9 21h6"/><path d="M12 17.5V21"/></symbol>
+<symbol id="c-investment" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19h16"/><path d="m5 15 4.5-5 3.5 3.5L19 6"/><path d="M15 6h4v4"/></symbol>
+<symbol id="c-tip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 4v16"/><path d="M15.5 7.5A3 3 0 0 0 12.8 6h-1.4a2.6 2.6 0 0 0-.4 5.2l2 .3a2.6 2.6 0 0 1-.4 5.2h-1.4a3 3 0 0 1-2.7-1.5"/></symbol>
+<symbol id="c-parttime" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 1.8"/></symbol>
+<symbol id="c-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/></symbol>
+<symbol id="c-exchange" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 8h13l-3-3M20 16H7l3 3"/></symbol>
+<symbol id="c-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.7-6"/><path d="M20 4v5h-5"/></symbol>
+<symbol id="c-palette" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20a8 8 0 1 1 8-8c0 2-2 2-3 2h-2a2 2 0 0 0 0 4c0 1-1 2-3 2Z"/><circle cx="8" cy="10" r="1"/><circle cx="12" cy="7.5" r="1"/><circle cx="16" cy="10" r="1"/></symbol>
+</defs></svg>
+
+<!-- ══════════ ការចូលគណនី ══════════ -->
+<section class="screen on" id="s-splash">
+  <div class="authwrap hero">
+    <div class="authlogo">៛</div>
+    <h1>Money Note</h1>
+    <p>សៀវភៅចំណូល-ចំណាយ សម្រាប់គ្រប់គ្រងលុយកាក់ប្រចាំថ្ងៃ</p>
+    <div class="herocard">
+      <button class="save" id="splashStart">ចាប់ផ្តើម</button>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="s-welcome">
+  <div class="authwrap">
+    <div class="authhead" style="margin-top:auto">
+      <div class="authlogo" style="background:color-mix(in srgb,var(--brand) 14%,transparent); color:var(--brand); margin:0 auto">៛</div>
+      <b>សូមស្វាគមន៍</b>
+      <p>ចូល ឬបង្កើតគណនី ដើម្បីរក្សាទុកទិន្នន័យរបស់អ្នកឱ្យមានសុវត្ថិភាព</p>
+    </div>
+    <div class="authcard" style="margin-top:var(--sp5)">
+      <button class="save" id="wSignin">ចូលគណនី</button>
+      <button class="gbtn" id="wSignup">បង្កើតគណនីថ្មី</button>
+      <div class="authdiv">ឬ</div>
+      <button class="gbtn" id="wGoogle"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22 12.2c0-.75-.07-1.47-.2-2.16H12v4.1h5.6c-.24 1.3-1 2.4-2.1 3.14v2.6h3.4c2-1.84 3.1-4.55 3.1-7.68Z"/><path fill="#34A853" d="M12 22c2.7 0 4.97-.9 6.6-2.42l-3.4-2.6c-.94.64-2.15 1-3.2 1-2.46 0-4.55-1.66-5.3-3.9H3.2v2.68A10 10 0 0 0 12 22Z"/><path fill="#FBBC05" d="M6.7 14.08a6 6 0 0 1 0-3.86V7.54H3.2a10 10 0 0 0 0 8.92l3.5-2.38Z"/><path fill="#EA4335" d="M12 6.2c1.47 0 2.8.5 3.83 1.5l2.87-2.87A9.7 9.7 0 0 0 12 2a10 10 0 0 0-8.8 5.54l3.5 2.68C7.45 7.9 9.54 6.2 12 6.2Z"/></svg>ចូលដោយ Google</button>
+      <button class="authlink" id="wGuest" style="margin:var(--sp3) auto 0">ប្រើដោយមិនចូលគណនី</button>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="s-login">
+  <div class="authwrap">
+    <div class="authhead" style="text-align:left; margin-top:var(--sp6)">
+      <b>ចូលគណនី</b>
+      <p>បញ្ចូលអ៊ីមែល និងពាក្យសម្ងាត់របស់អ្នក</p>
+    </div>
+    <div class="autherr" id="loginErr"></div>
+    <div class="frow"><label>អ៊ីមែល</label><input id="loginEmail" type="email" placeholder="m@example.com" autocomplete="username"></div>
+    <div class="frow"><label>ពាក្យសម្ងាត់</label><input id="loginPass" type="password" autocomplete="current-password"></div>
+    <button class="save" id="loginSubmit">ចូល</button>
+    <div class="authfoot"><button class="authlink" id="loginBack">← ត្រឡប់ក្រោយ</button></div>
+  </div>
+</section>
+
+<section class="screen" id="s-signup">
+  <div class="authwrap">
+    <div class="authhead" style="text-align:left; margin-top:var(--sp6)">
+      <b>បង្កើតគណនីថ្មី</b>
+      <p>ត្រូវការយ៉ាងតិច ៦ តួអក្សរសម្រាប់ពាក្យសម្ងាត់</p>
+    </div>
+    <div class="autherr" id="signupErr"></div>
+    <div class="frow"><label>អ៊ីមែល</label><input id="signupEmail" type="email" placeholder="m@example.com" autocomplete="username"></div>
+    <div class="frow"><label>ពាក្យសម្ងាត់</label><input id="signupPass" type="password" autocomplete="new-password"></div>
+    <button class="save" id="signupSubmit">បង្កើតគណនី</button>
+    <div class="authfoot"><button class="authlink" id="signupBack">← ត្រឡប់ក្រោយ</button></div>
+  </div>
+</section>
+
+<!-- ══════════ សោកម្មវិធី ══════════ -->
+<div class="lockwrap hide" id="lockScreen">
+  <div class="authlogo">🔒</div>
+  <div id="lockMsg">បញ្ចូលលេខសម្ងាត់</div>
+  <div class="lockdots" id="lockDots"></div>
+  <div class="lockerr" id="lockErr"></div>
+  <div class="lockpad" id="lockPad">
+    <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+    <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+    <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+    <button data-k="cancel" style="font-size:13px">បោះបង់</button><button data-k="0">0</button><button data-k="back">⌫</button>
+  </div>
+</div>
+
+<div class="phone">
+
+  <!-- ══════════ អេក្រង់ ១ · ដើម ══════════ -->
+  <section class="screen" id="s-home">
+    <div class="head">
+      <div class="ava">ស</div>
+      <div class="hi"><small id="greet">សួស្តី</small><b>សុខ មាន</b></div>
+      <button class="hbtn" id="bNoti" aria-label="ការជូនដំណឹង"><svg width="19" height="19" aria-hidden="true"><use href="#c-bell"></use></svg><i class="badge"></i></button>
+      <button class="hbtn" id="tMoon" aria-label="ប្តូរផ្ទៃភ្លឺ-ងងឹត"><svg width="19" height="19" aria-hidden="true"><use href="#c-moon"></use></svg></button>
+    </div>
+
+    <div class="deck" id="deck"></div>
+    <div class="dots" id="dots"></div>
+
+    <div class="quick">
+      <button class="qbtn" data-q="transfer"><span class="qi"><svg width="19" height="19" aria-hidden="true"><use href="#c-send"></use></svg></span>ផ្ទេរ</button>
+      <button class="qbtn" data-q="goals"><span class="qi"><svg width="19" height="19" aria-hidden="true"><use href="#c-target"></use></svg></span>គោលដៅ</button>
+      <button class="qbtn" data-q="debts"><span class="qi"><svg width="19" height="19" aria-hidden="true"><use href="#c-hand"></use></svg></span>បំណុល</button>
+      <button class="qbtn" data-q="stats"><span class="qi"><svg width="19" height="19" aria-hidden="true"><use href="#c-chart"></use></svg></span>របាយការណ៍</button>
+    </div>
+
+    <button class="budget" id="bBudget">
+      <div class="ring">
+        <svg width="82" height="82" aria-hidden="true">
+          <circle cx="41" cy="41" r="34" fill="none" stroke="var(--line)" stroke-width="9"/>
+          <circle id="arc" cx="41" cy="41" r="34" fill="none" stroke="var(--brand)" stroke-width="9"
+                  stroke-linecap="round" stroke-dasharray="213.6" stroke-dashoffset="213.6"/>
+        </svg>
+        <b id="pct">0%</b>
+      </div>
+      <div class="bmid">
+        <small>ថវិកាខែសីហា</small>
+        <div class="bn" id="bBn"></div>
+        <p id="bLeft"></p>
+      </div>
+    </button>
+
+    <div class="sec"><b>ប្រតិបត្តិការថ្មីៗ</b><button id="bAll">មើលទាំងអស់</button></div>
+    <div class="list" id="recent"></div>
+  </section>
+
+  <!-- ══════════ អេក្រង់ ២ · ស្ថិតិ ══════════ -->
+  <section class="screen" id="s-stats">
+    <div class="shead">
+      <button class="hbtn" id="statsPrev" aria-label="ខែមុន"><svg width="18" height="18" aria-hidden="true"><use href="#c-back"></use></svg></button>
+      <h1 style="text-align:center">ស្ថិតិ<small id="statsMonthLbl"></small></h1>
+      <button class="hbtn" id="statsNext" aria-label="ខែក្រោយ"><svg width="18" height="18" aria-hidden="true"><use href="#c-chev"></use></svg></button>
+    </div>
+    <div class="seg" role="tablist">
+      <button class="on" data-k="expense" role="tab">ចំណាយ</button>
+      <button data-k="income" role="tab">ចំណូល</button>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <div class="panel">
+      <div class="donutwrap">
+        <svg width="176" height="176" id="donut" aria-hidden="true"></svg>
+        <div class="dcenter"><small id="dLabel">ចំណាយសរុប</small><b id="dTotal">0</b></div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div class="sec"><b>និន្នាការ ៦ ខែចុងក្រោយ</b></div>
+    <div class="panel"><div class="bars" id="bars"></div></div>
+  </section>
+
+  <!-- ══════════ អេក្រង់ ៣ · កាបូប ══════════ -->
+  <section class="screen" id="s-wallet">
+    <div class="shead"><h1>កាបូប<small id="wTotal"></small></h1><button class="hbtn" id="bAddWallet" aria-label="បន្ថែមកាបូប"><svg width="19" height="19" aria-hidden="true"><use href="#c-plus"></use></svg></button></div>
+    <div class="list" id="wlist"></div>
+    <div class="sec" id="secGoals"><b>គោលដៅសន្សំ</b><button data-add="goal">បន្ថែម</button></div>
+    <div class="list" id="glist"></div>
+    <div class="sec" id="secDebts"><b>បំណុល</b><button data-add="debt">បន្ថែម</button></div>
+    <div class="list" id="dlist"></div>
+  </section>
+
+  <!-- ══════════ អេក្រង់ ៤ · ការកំណត់ ══════════ -->
+  <section class="screen" id="s-more">
+    <div class="shead"><h1>ការកំណត់</h1></div>
+    <div class="profile">
+      <div class="pav" id="pAv">ស</div>
+      <div><b id="pName">អ្នកភ្ញៀវ</b><small id="pEmail">ទិន្នន័យក្នុងម៉ាស៊ីន</small></div>
+    </div>
+    <div class="glabel">ការកំណត់ទូទៅ</div>
+    <div class="group">
+      <div class="srow" role="group">
+        <span class="si"><svg width="17" height="17" aria-hidden="true"><use href="#c-moon"></use></svg></span>
+        <span class="stxt">ផ្ទៃងងឹត<small>ការពារភ្នែកពេលយប់</small></span>
+        <button class="sw" id="swDark" role="switch" aria-checked="false" aria-label="ផ្ទៃងងឹត"><i></i></button>
+      </div>
+      <button class="srow" data-go="budget">
+        <span class="si"><svg width="17" height="17" aria-hidden="true"><use href="#c-target"></use></svg></span>
+        <span class="stxt">ថវិកាប្រចាំខែ</span>
+        <span class="sval num" id="sBudget"></span>
+        <svg width="16" height="16" style="color:var(--soft)" aria-hidden="true"><use href="#c-chev"></use></svg>
+      </button>
+      <button class="srow" id="rowRate">
+        <span class="si"><svg width="17" height="17" aria-hidden="true"><use href="#c-exchange"></use></svg></span>
+        <span class="stxt">រូបិយប័ណ្ណ និងអត្រាប្តូរប្រាក់<small id="sRateSub"></small></span>
+        <svg width="16" height="16" style="color:var(--soft)" aria-hidden="true"><use href="#c-chev"></use></svg>
+      </button>
+      <button class="srow" data-soon="គ្រប់គ្រងប្រភេទ">
+        <span class="si"><svg width="17" height="17" aria-hidden="true"><use href="#c-tag"></use></svg></span>
+        <span class="stxt">គ្រប់គ្រងប្រភេទ</span>
+        <span class="sval num" id="sCats"></span>
+        <svg width="16" height="16" style="color:var(--soft)" aria-hidden="true"><use href="#c-chev"></use></svg>
+      </button>
+      <button class="srow" id="rowRecurring">
+        <span class="si"><svg width="17" height="17" aria-hidden="true"><use href="#c-repeat"></use></svg></span>
+        <span class="stxt">ប្រតិបត្តិការដដែលៗ</span>
+        <span class="sval" id="sRecur">០ ធាតុ</span>
+        <svg width="16" height="16" style="color:var(--soft)" aria-hidden="true"><use href="#c-chev"></use></svg>
+      </button>
+      <button class="srow" data-soon="ការប្តូរពណ៌កម្មវិធី">
+        <span class="si"><svg width="17" height="17" aria-hidden="true"><use href="#c-palette"></use></svg></span>
+        <span class="stxt">ពណ៌កម្មវិធី</span>
+        <span class="sval">ខៀវ Cobalt</span>
+        <svg width="16" height="16" style="color:var(--soft)" aria-hidden="true"><use href="#c-chev"></use></svg>
+      </button>
+    </div>
+    <div class="glabel">ទិន្នន័យ និងសុវត្ថិភាព</div>
+    <div class="group">
+      <button class="srow" id="rowSync">
+        <span class="si"><svg width="17" height="17" aria-hidden="true"><use href="#c-refresh"></use></svg></span>
+        <span class="stxt">សមកាលកម្មឥឡូវនេះ<small id="syncSub">ទាញទិន្នន័យថ្មីពី server</small></span>
+        <svg width="16" height="16" style="color:var(--soft)" aria-hidden="true"><use href="#c-chev"></use></svg>
+      </button>
+      <div class="srow">
+        <span class="si"><svg width="17" height="17" aria-hidden="true"><use href="#c-lock"></use></svg></span>
+        <span class="stxt">សោបើកកម្មវិធី<small>លេខសម្ងាត់ ៦ ខ្ទង់</small></span>
+        <button class="sw" id="swLock" role="switch" aria-checked="false" aria-label="សោបើកកម្មវិធី"><i></i></button>
+      </div>
+      <button class="srow" id="bReport">
+        <span class="si"><svg width="17" height="17" aria-hidden="true"><use href="#c-chart"></use></svg></span>
+        <span class="stxt">របាយការណ៍ប្រចាំខែ<small>រូបភាពសម្រាប់ចែករំលែក</small></span>
+        <svg width="16" height="16" style="color:var(--soft)" aria-hidden="true"><use href="#c-chev"></use></svg>
+      </button>
+      <button class="srow" id="bExport">
+        <span class="si"><svg width="17" height="17" aria-hidden="true"><use href="#c-down"></use></svg></span>
+        <span class="stxt">នាំចេញជា CSV</span>
+        <svg width="16" height="16" style="color:var(--soft)" aria-hidden="true"><use href="#c-chev"></use></svg>
+      </button>
+      <button class="srow" id="bBackup">
+        <span class="si"><svg width="17" height="17" aria-hidden="true"><use href="#c-down"></use></svg></span>
+        <span class="stxt">បម្រុងទុកជា JSON<small>ទិន្នន័យទាំងអស់ក្នុងឯកសារតែមួយ</small></span>
+        <svg width="16" height="16" style="color:var(--soft)" aria-hidden="true"><use href="#c-chev"></use></svg>
+      </button>
+      <button class="srow" id="bRestore">
+        <span class="si"><svg width="17" height="17" aria-hidden="true"><use href="#c-upload"></use></svg></span>
+        <span class="stxt">ស្តារទិន្នន័យ (Restore)<small>នាំចូលពីឯកសារ JSON ដែលធ្លាប់បម្រុងទុក</small></span>
+        <svg width="16" height="16" style="color:var(--soft)" aria-hidden="true"><use href="#c-chev"></use></svg>
+      </button>
+      <input type="file" id="restoreFile" accept="application/json,.json" hidden>
+    </div>
+    <div class="glabel">គណនី</div>
+    <div class="group" id="grpAccount">
+      <button class="srow" id="rowLogin" style="display:none">
+        <span class="si"><svg width="17" height="17" aria-hidden="true"><use href="#c-lock"></use></svg></span>
+        <span class="stxt">ចូល / ចុះឈ្មោះគណនី</span>
+        <svg width="16" height="16" style="color:var(--soft)" aria-hidden="true"><use href="#c-chev"></use></svg>
+      </button>
+    </div>
+    <div class="glabel">អំពី</div>
+    <div class="group">
+      <button class="srow" data-soon="ការប្តូរភាសា">
+        <span class="si"><svg width="17" height="17" aria-hidden="true"><use href="#c-globe"></use></svg></span>
+        <span class="stxt">ភាសា</span><span class="sval">ខ្មែរ</span>
+        <svg width="16" height="16" style="color:var(--soft)" aria-hidden="true"><use href="#c-chev"></use></svg>
+      </button>
+      <button class="srow">
+        <span class="si"><svg width="17" height="17" aria-hidden="true"><use href="#c-info"></use></svg></span>
+        <span class="stxt">អំពីកម្មវិធី</span><span class="sval num">V1 · Money Note</span>
+      </button>
+      <button class="srow" id="bOut" style="display:none">
+        <span class="si" style="color:var(--expense)"><svg width="17" height="17" aria-hidden="true"><use href="#c-out"></use></svg></span>
+        <span class="stxt" style="color:var(--expense)">ចាកចេញ</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ══════════ អេក្រង់ ៥ · បញ្ជីពេញ ══════════ -->
+  <section class="screen" id="s-all">
+    <div class="shead">
+      <button class="hbtn" id="bBack" aria-label="ត្រឡប់ក្រោយ"><svg width="19" height="19" aria-hidden="true"><use href="#c-back"></use></svg></button>
+      <h1>ប្រតិបត្តិការទាំងអស់<small id="allCount"></small></h1>
+    </div>
+    <div class="searchbar">
+      <svg width="18" height="18" aria-hidden="true"><use href="#c-search"></use></svg>
+      <input id="q" type="search" placeholder="ស្វែងរកតាមឈ្មោះ ឬកំណត់ចំណាំ" aria-label="ស្វែងរកប្រតិបត្តិការ">
+    </div>
+    <div class="seg" id="allModeSeg" style="margin:0 var(--sp5) var(--sp4)">
+      <button class="on" data-m="list">បញ្ជី</button>
+      <button data-m="cal">ប្រតិទិន</button>
+    </div>
+    <div id="listTools">
+      <div class="chips" id="filters">
+        <button class="chip on" data-f="all">ទាំងអស់</button>
+        <button class="chip" data-f="expense">ចំណាយ</button>
+        <button class="chip" data-f="income">ចំណូល</button>
+        <button class="chip" data-f="transfer">ផ្ទេរ</button>
+      </div>
+    </div>
+    <div id="calView" style="display:none">
+      <div class="calmonth">
+        <button class="xbtn" id="cvPrev" aria-label="ខែមុន"><svg width="16" height="16" aria-hidden="true"><use href="#c-back"></use></svg></button>
+        <b id="cvTitle"></b>
+        <button class="xbtn" id="cvNext" aria-label="ខែក្រោយ"><svg width="16" height="16" aria-hidden="true"><use href="#c-chev"></use></svg></button>
+      </div>
+      <div class="cgrid" id="cvGrid"></div>
+      <div class="sec" style="padding-bottom:var(--sp2)"><b id="cvDayLbl">ជ្រើសថ្ងៃណាមួយ</b><button id="cvClear">មើលទាំងខែ</button></div>
+    </div>
+    <div class="list" id="alllist"></div>
+  </section>
+
+</div>
+
+<!-- ══════════ FAB + សកម្មភាពរាយ ══════════ -->
+<div class="mini" id="m1"><span>ចំណូល</span><button data-t="income" aria-label="បន្ថែមចំណូល"><svg width="20" height="20" aria-hidden="true"><use href="#c-plus"></use></svg></button></div>
+<div class="mini" id="m2"><span>ចំណាយ</span><button data-t="expense" aria-label="បន្ថែមចំណាយ"><svg width="20" height="20" aria-hidden="true"><use href="#c-plus"></use></svg></button></div>
+<div class="mini" id="m3"><span>ផ្ទេរ</span><button data-t="transfer" aria-label="ផ្ទេរប្រាក់"><svg width="20" height="20" aria-hidden="true"><use href="#c-send"></use></svg></button></div>
+<button class="fab" id="fab" aria-label="បន្ថែមប្រតិបត្តិការ" aria-expanded="false"><svg width="24" height="24" aria-hidden="true"><use href="#c-plus"></use></svg></button>
+
+<nav class="nav" id="nav">
+  <button class="nb on" data-s="home"><svg width="20" height="20" aria-hidden="true"><use href="#c-home"></use></svg>ដើម</button>
+  <button class="nb" data-s="stats"><svg width="20" height="20" aria-hidden="true"><use href="#c-chart"></use></svg>ស្ថិតិ</button>
+  <button class="nb" data-s="wallet"><svg width="20" height="20" aria-hidden="true"><use href="#c-wallet"></use></svg>កាបូប</button>
+  <button class="nb" data-s="more"><svg width="20" height="20" aria-hidden="true"><use href="#c-more"></use></svg>ការកំណត់</button>
+</nav>
+
+<!-- ══════════ សន្លឹក ══════════ -->
+<div class="scrim" id="scrim"></div>
+
+<div class="sheet" id="shAdd" role="dialog" aria-modal="true" aria-label="បន្ថែមប្រតិបត្តិការ">
+  <div class="grip"></div>
+  <div class="stitle"><b id="addTitle">បន្ថែមចំណាយ</b>
+    <button class="xbtn" data-close aria-label="បិទ"><svg width="16" height="16" aria-hidden="true"><use href="#c-x"></use></svg></button></div>
+  <div class="seg" id="typeSeg">
+    <button data-t="expense" class="on">ចំណាយ</button>
+    <button data-t="income">ចំណូល</button>
+    <button data-t="transfer">ផ្ទេរ</button>
+  </div>
+  <div class="amtbox">
+    <div class="amttop">
+      <small>ចំនួនទឹកប្រាក់</small>
+      <div class="curpick" id="curPick">
+        <button class="pk on" data-c="KHR">៛</button>
+        <button class="pk" data-c="USD">$</button>
+      </div>
+    </div>
+    <div class="big expense" id="amtDisp">0<i>៛</i></div>
+    <div class="conv" id="amtConv"></div>
+  </div>
+  <div class="pad" id="pad">
+    <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button class="op" data-k="back" aria-label="លុបខ្ទង់"><svg width="20" height="20" style="vertical-align:-4px" aria-hidden="true"><use href="#c-del"></use></svg></button>
+    <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button class="op" data-k="-">−</button>
+    <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button class="op" data-k="+">+</button>
+    <button data-k="000" id="padExtra">000</button><button data-k="0">0</button><button class="op" data-k="clear">C</button><button class="eq" data-k="=">=</button>
+  </div>
+  <div id="catWrap">
+    <div class="glabel" style="padding-left:4px; margin-top:0">ប្រភេទ</div>
+    <div class="catgrid" id="catGrid"></div>
+  </div>
+  <div id="trWrap" style="display:none">
+    <div class="frow"><label>ពី</label><div class="pick" id="frWal"></div></div>
+    <div class="frow"><label>ទៅ</label><div class="pick" id="toWal"></div></div>
+  </div>
+  <div class="frow" id="walRow"><label>កាបូប</label><div class="pick" id="walPick"></div></div>
+  <div class="frow"><label>កាលបរិច្ឆេទ</label>
+    <div class="pick"><button class="pk on" id="dateBtn"></button></div></div>
+  <div class="frow"><label for="locIn">ទីតាំង</label>
+    <div class="locrow">
+      <input id="locIn" placeholder="ឧ. ផ្សារធំថ្មី" maxlength="60">
+      <button class="pinbtn" id="locBtn" type="button" aria-label="យកទីតាំងបច្ចុប្បន្ន"><svg width="18" height="18" aria-hidden="true"><use href="#c-pin"></use></svg></button>
+    </div></div>
+  <div class="frow"><label for="noteIn">កំណត់ចំណាំ</label>
+    <input id="noteIn" placeholder="..." maxlength="60"></div>
+  <div class="batchwrap" id="batchWrap">
+    <div class="batchlist" id="batchList"></div>
+    <button class="addmore" id="addMore" type="button">＋ បន្ថែមមុខទៀត (រក្សាទុករួមគ្នា)</button>
+  </div>
+  <button class="save" id="saveBtn">រក្សាទុក</button>
+</div>
+
+<div class="sheet" id="shDetail" role="dialog" aria-modal="true" aria-label="ព័ត៌មានលម្អិត">
+  <div class="grip"></div>
+  <div class="stitle"><b>ព័ត៌មានលម្អិត</b>
+    <button class="xbtn" data-close aria-label="បិទ"><svg width="16" height="16" aria-hidden="true"><use href="#c-x"></use></svg></button></div>
+  <div id="detailBody"></div>
+</div>
+
+<div class="sheet" id="shCal" role="dialog" aria-modal="true" aria-label="ជ្រើសកាលបរិច្ឆេទ">
+  <div class="grip"></div>
+  <div class="stitle"><b>ជ្រើសកាលបរិច្ឆេទ</b>
+    <button class="xbtn" data-close aria-label="បិទ"><svg width="16" height="16" aria-hidden="true"><use href="#c-x"></use></svg></button></div>
+  <div class="panel">
+    <div class="calh">
+      <button class="xbtn" id="calPrev" aria-label="ខែមុន"><svg width="16" height="16" aria-hidden="true"><use href="#c-back"></use></svg></button>
+      <b id="calTitle"></b>
+      <button class="xbtn" id="calNext" aria-label="ខែក្រោយ"><svg width="16" height="16" aria-hidden="true"><use href="#c-chev"></use></svg></button>
+    </div>
+    <div class="calg" id="calGrid"></div>
+  </div>
+</div>
+
+<div class="sheet" id="shNoti" role="dialog" aria-modal="true" aria-label="ការជូនដំណឹង">
+  <div class="grip"></div>
+  <div class="stitle"><b>ការជូនដំណឹង</b>
+    <button class="xbtn" data-close aria-label="បិទ"><svg width="16" height="16" aria-hidden="true"><use href="#c-x"></use></svg></button></div>
+  <div class="panel" id="notiPanel"></div>
+</div>
+
+<div class="sheet" id="shBudget" role="dialog" aria-modal="true" aria-label="ថវិកាប្រចាំខែ">
+  <div class="grip"></div>
+  <div class="stitle"><b>ថវិកាប្រចាំខែ</b>
+    <button class="xbtn" data-close aria-label="បិទ"><svg width="16" height="16" aria-hidden="true"><use href="#c-x"></use></svg></button></div>
+  <div class="frow"><label for="budIn">កំណត់</label><input id="budIn" type="number" inputmode="numeric" min="0" step="10000"><span style="color:var(--soft);font-size:13px">៛</span></div>
+  <div class="chips" style="padding:0 0 var(--sp4)" id="budQuick">
+    <button class="chip" data-v="800000">800,000</button>
+    <button class="chip" data-v="1000000">1,000,000</button>
+    <button class="chip" data-v="1200000">1,200,000</button>
+    <button class="chip" data-v="1500000">1,500,000</button>
+  </div>
+  <button class="save" id="budSave">រក្សាទុក</button>
+</div>
+
+<div class="sheet" id="shWallet" role="dialog" aria-modal="true" aria-label="កាបូបលុយ">
+  <div class="grip"></div>
+  <div class="stitle"><b id="walletTitle">បន្ថែមកាបូប</b>
+    <button class="xbtn" data-close aria-label="បិទ"><svg width="16" height="16" aria-hidden="true"><use href="#c-x"></use></svg></button></div>
+  <div class="frow"><label>ឈ្មោះ</label><input id="walName" placeholder="ឧ. ABA, Wing, សាច់ប្រាក់"></div>
+  <div class="frow"><label>បរិយាយខ្លី</label><input id="walSub" placeholder="ឧ. កាបូបធនាគារ"></div>
+  <div class="frow"><label>សមតុល្យដើម</label><input id="walOpen" type="number" inputmode="numeric" step="1000"><span style="color:var(--soft);font-size:13px">៛</span></div>
+  <div class="frow" style="align-items:flex-start"><label style="padding-top:6px">ពណ៌</label><div class="swatches" id="walSwatches"></div></div>
+  <div class="wcard" id="walPreview" style="flex:1 0 auto;margin-bottom:var(--sp4);pointer-events:none">
+    <div class="wtop"><span id="wpName">កាបូប</span><span>មើលជាមុន</span></div>
+    <div class="wnum">1,234,500<span class="cur">៛</span></div>
+  </div>
+  <button class="save" id="walSave">រក្សាទុក</button>
+  <button class="dbtn" id="walDelete" style="display:none">លុបកាបូបនេះ</button>
+</div>
+
+<div class="sheet" id="shGoal" role="dialog" aria-modal="true" aria-label="គោលដៅសន្សំ">
+  <div class="grip"></div>
+  <div class="stitle"><b id="goalTitle">បន្ថែមគោលដៅ</b>
+    <button class="xbtn" data-close aria-label="បិទ"><svg width="16" height="16" aria-hidden="true"><use href="#c-x"></use></svg></button></div>
+  <div class="frow"><label>ឈ្មោះ</label><input id="goalName" placeholder="ឧ. កុំព្យូទ័រថ្មី"></div>
+  <div class="frow"><label>សន្សំបានហើយ</label><input id="goalNow" type="number" inputmode="numeric" step="10000"><span style="color:var(--soft);font-size:13px">៛</span></div>
+  <div class="frow"><label>គោលដៅ</label><input id="goalTgt" type="number" inputmode="numeric" step="10000"><span style="color:var(--soft);font-size:13px">៛</span></div>
+  <div class="frow"><label>កំណត់ថ្ងៃ</label><input id="goalDue" placeholder="ឧ. ធ្នូ ២០២៦"></div>
+  <button class="save" id="goalSave">រក្សាទុក</button>
+  <button class="dbtn" id="goalDelete" style="display:none">លុបគោលដៅនេះ</button>
+</div>
+
+<div class="sheet" id="shDebt" role="dialog" aria-modal="true" aria-label="បំណុល-ឥណទាន">
+  <div class="grip"></div>
+  <div class="stitle"><b id="debtTitle">បន្ថែមបំណុល</b>
+    <button class="xbtn" data-close aria-label="បិទ"><svg width="16" height="16" aria-hidden="true"><use href="#c-x"></use></svg></button></div>
+  <div class="seg" id="debtDirSeg">
+    <button data-dir="in" class="on">គេជំពាក់យើង</button>
+    <button data-dir="out">យើងជំពាក់គេ</button>
+  </div>
+  <div class="frow"><label>ឈ្មោះ</label><input id="debtName" placeholder="ឧ. បង ដារ៉ា"></div>
+  <div class="frow"><label>ចំនួន</label><input id="debtAmt" type="number" inputmode="numeric" step="1000"><span style="color:var(--soft);font-size:13px">៛</span></div>
+  <div class="frow"><label>កំណត់សង</label><input id="debtDue" type="date"></div>
+  <div class="srow" style="background:var(--card);border-radius:var(--r-md);box-shadow:var(--shadow);margin-bottom:var(--sp3)">
+    <span class="stxt">បានសងរួច</span>
+    <button class="sw" id="debtPaidSw" role="switch" aria-checked="false"><i></i></button>
+  </div>
+  <button class="save" id="debtSave">រក្សាទុក</button>
+  <button class="dbtn" id="debtDelete" style="display:none">លុបបំណុលនេះ</button>
+</div>
+
+<div class="sheet" id="shRecurring" role="dialog" aria-modal="true" aria-label="ប្រតិបត្តិការដដែលៗ">
+  <div class="grip"></div>
+  <div class="stitle"><b>ប្រតិបត្តិការដដែលៗ</b>
+    <button class="xbtn" data-close aria-label="បិទ"><svg width="16" height="16" aria-hidden="true"><use href="#c-x"></use></svg></button></div>
+  <div class="list" id="recurList" style="margin:0 0 var(--sp4)"></div>
+  <button class="save" id="recurNewBtn">+ បន្ថែមថ្មី</button>
+</div>
+
+<div class="sheet" id="shRecurEdit" role="dialog" aria-modal="true" aria-label="កែប្រតិបត្តិការដដែលៗ">
+  <div class="grip"></div>
+  <div class="stitle"><b id="recurEditTitle">បន្ថែមប្រតិបត្តិការដដែលៗ</b>
+    <button class="xbtn" data-close aria-label="បិទ"><svg width="16" height="16" aria-hidden="true"><use href="#c-x"></use></svg></button></div>
+  <div class="seg" id="recurTypeSeg">
+    <button data-t="expense" class="on">ចំណាយ</button>
+    <button data-t="income">ចំណូល</button>
+  </div>
+  <div id="recurCatWrap">
+    <div class="glabel" style="padding-left:4px; margin-top:0">ប្រភេទ</div>
+    <div class="catgrid" id="recurCatGrid"></div>
+  </div>
+  <div class="frow"><label>ចំនួន</label><input id="recurAmt" type="number" inputmode="numeric" step="1000"><span style="color:var(--soft);font-size:13px">៛</span></div>
+  <div class="frow"><label>កាបូប</label><div class="pick" id="recurWalPick"></div></div>
+  <div class="frow"><label>ញឹកញាប់</label>
+    <div class="pick">
+      <button class="pk on" data-f="monthly">ប្រចាំខែ</button>
+      <button class="pk" data-f="weekly">ប្រចាំសប្តាហ៍</button>
+      <button class="pk" data-f="daily">ប្រចាំថ្ងៃ</button>
+    </div>
+  </div>
+  <div class="frow" id="recurDomRow"><label>ថ្ងៃទី</label><input id="recurDom" type="number" min="1" max="28" value="1"></div>
+  <div class="frow"><label for="recurNote">កំណត់ចំណាំ</label><input id="recurNote" placeholder="ឧ. ថ្លៃជួលផ្ទះ"></div>
+  <button class="save" id="recurSave">រក្សាទុក</button>
+  <button class="dbtn" id="recurDelete" style="display:none">លុបចោល</button>
+</div>
+
+<div class="sheet" id="shReport" role="dialog" aria-modal="true" aria-label="របាយការណ៍ប្រចាំខែ">
+  <div class="grip"></div>
+  <div class="stitle"><b>របាយការណ៍ប្រចាំខែ</b>
+    <button class="xbtn" data-close aria-label="បិទ"><svg width="16" height="16" aria-hidden="true"><use href="#c-x"></use></svg></button></div>
+  <div style="text-align:center">
+    <img id="reportImg" style="width:100%;border-radius:var(--r-md);box-shadow:var(--shadow)" alt="របាយការណ៍ប្រចាំខែ">
+  </div>
+  <button class="save" id="reportShare" style="margin-top:var(--sp4)">ចែករំលែក / រក្សាទុក</button>
+</div>
+
+<div class="sheet" id="shRate" role="dialog" aria-modal="true" aria-label="រូបិយប័ណ្ណ និងអត្រាប្តូរប្រាក់">
+  <div class="grip"></div>
+  <div class="stitle"><b>រូបិយប័ណ្ណ</b>
+    <button class="xbtn" data-close aria-label="បិទ"><svg width="16" height="16" aria-hidden="true"><use href="#c-x"></use></svg></button></div>
+  <div class="frow"><label>បង្ហាញជា</label>
+    <div class="pick" id="dispPick">
+      <button class="pk on" data-d="KHR">រៀល ៛</button>
+      <button class="pk" data-d="USD">ដុល្លារ $</button>
+    </div></div>
+  <div class="frow"><label for="rateIn">១ ដុល្លារ =</label>
+    <input id="rateIn" type="number" inputmode="numeric" min="1" step="10">
+    <span style="color:var(--soft);font-size:13px">៛</span></div>
+  <p style="font-size:11.5px;color:var(--soft);line-height:1.8;margin:0 0 var(--sp4);padding:0 4px">
+    ទឹកប្រាក់ទាំងអស់រក្សាទុកជា <b>រៀល</b> ជាមូលដ្ឋាន។ ការប្តូរនេះប៉ះពាល់តែការបង្ហាញ
+    និងការបញ្ចូលប៉ុណ្ណោះ — អត្រាត្រូវរក្សាទុកក្នុងឧបករណ៍នេះ។</p>
+  <button class="save" id="rateSave">រក្សាទុក</button>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+/* ═══════════ ១. ទិន្នន័យ ═══════════ */
+const KH_M = ['មករា','កុម្ភៈ','មីនា','មេសា','ឧសភា','មិថុនា','កក្កដា','សីហា','កញ្ញា','តុលា','វិច្ឆិកា','ធ្នូ'];
+const KH_D = ['អាទិត្យ','ចន្ទ','អង្គារ','ពុធ','ព្រហស្បតិ៍','សុក្រ','សៅរ៍'];
+function fmtDateVal(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+let TODAY = fmtDateVal(new Date());                                    // កាលបរិច្ឆេទបច្ចុប្បន្នពិត
+let VIEW  = {y:new Date().getFullYear(), m:new Date().getMonth()};     // ខែដើម (ត្រូវជាខែបច្ចុប្បន្នជានិច្ច)
+let statsView = {y:VIEW.y, m:VIEW.m};                                  // ខែកំពុងរុករកក្នុងផ្ទាំងស្ថិតិ (ដាច់ដោយឡែកពី VIEW)
+
+const CATS = {
+  expense:[
+    {id:'food',  n:'អាហារ',      i:'c-food', c:'#F0523F'},
+    {id:'trans', n:'ដឹកជញ្ជូន',   i:'c-fuel', c:'#F59E0B'},
+    {id:'shop',  n:'ទិញឥវ៉ាន់',   i:'c-cart', c:'#60A5FA'},
+    {id:'home',  n:'គេហដ្ឋាន',    i:'c-house',c:'#0EA5E9'},
+    {id:'bill',  n:'វិក្កយបត្រ',   i:'c-bill', c:'#64748B'},
+    {id:'health',n:'សុខភាព',      i:'c-heart',c:'#EC4899'},
+    {id:'edu',   n:'អប់រំ',        i:'c-book', c:'#14B8A6'},
+    {id:'fun',   n:'កម្សាន្ត',     i:'c-play', c:'#8B5CF6'},
+    {id:'other', n:'ផ្សេងៗ',      i:'c-more', c:'#94A3B8'}
+  ],
+  income:[
+    {id:'salary',    n:'ប្រាក់ខែ',    i:'c-salary',c:'#0FA36B'},
+    {id:'biz',       n:'អាជីវកម្ម',    i:'c-case',  c:'#2563EB'},
+    {id:'gift',      n:'អំណោយ',   i:'c-gift',  c:'#EC4899'},
+    {id:'bonus',     n:'ប្រាក់រង្វាន់',  i:'c-bonus',      c:'#14B8A6'},
+    {id:'investment',n:'ការវិនិយោគ',   i:'c-investment', c:'#0A71A8'},
+    {id:'tip',       n:'ប្រាក់ទឹកតែ',   i:'c-tip',        c:'#C2BC0D'},
+    {id:'parttime',  n:'ការងារក្រៅម៉ោង',i:'c-parttime',   c:'#5CF26B'},
+    {id:'other2',    n:'ផ្សេងៗ',      i:'c-more',  c:'#94A3B8'}
+  ]
+};
+const catOf = (t,id)=> (CATS[t]||[]).find(c=>c.id===id) || {n:'ផ្ទេរប្រាក់', i:'c-send', c:'#60A5FA'};
+
+const state = {
+  theme:'light', screen:'home', statKind:'expense', filter:'all', query:'',
+  email:null, budget:0, day:null,
+  // រូបិយប័ណ្ណ៖ ទឹកប្រាក់រក្សាទុកជា "រៀល" ជានិច្ច — display/rate ប៉ះពាល់តែការបង្ហាញ
+  display:'KHR', rate:4100,
+  wallets:[], txns:[], goals:[], debts:[], recurring:[],
+};
+try{
+  const r=Number(localStorage.getItem('mn_rate'));   if(r>0) state.rate=r;
+  const d=localStorage.getItem('mn_display');        if(d==='USD') state.display='USD';
+}catch(e){}
+
+/* ═══════════ ២. ឧបករណ៍ជំនួយ ═══════════ */
+const $  = s=>document.querySelector(s);
+const $$ = s=>[...document.querySelectorAll(s)];
+const fmt = n=>Math.round(n).toLocaleString('en-US');
+// ── ការបង្ហាញទឹកប្រាក់ (បញ្ចូលជា រៀល ជានិច្ច) ──
+const curSym = ()=> state.display==='USD' ? '$' : '៛';
+function moneyNum(khr){
+  if(state.display!=='USD') return fmt(khr);
+  const v=khr/state.rate;
+  return Math.abs(v)>=1000 ? fmt(v)
+       : v.toLocaleString('en-US',{minimumFractionDigits:2, maximumFractionDigits:2});
+}
+const money = khr => moneyNum(khr)+curSym();
+const kh  = s=>String(s).replace(/[0-9]/g,d=>'០១២៣៤៥៦៧៨៩'[d]);
+const parse = d=>{const[y,m,dd]=d.split('-').map(Number); return new Date(y,m-1,dd);};
+const walOf = id=>state.wallets.find(w=>w.id===id)||{n:'—'};
+const inView = t=>{const d=parse(t.d); return d.getFullYear()===VIEW.y && d.getMonth()===VIEW.m;};
+const sumBy  = f=>state.txns.filter(f).reduce((s,t)=>s+t.a,0);
+
+function dayLabel(ds){
+  if(ds===TODAY) return 'ថ្ងៃនេះ';
+  const y=parse(TODAY); y.setDate(y.getDate()-1);
+  const ymd=`${y.getFullYear()}-${String(y.getMonth()+1).padStart(2,'0')}-${String(y.getDate()).padStart(2,'0')}`;
+  if(ds===ymd) return 'ម្សិលមិញ';
+  const d=parse(ds);
+  return `ថ្ងៃ${KH_D[d.getDay()]} ${kh(String(d.getDate()).padStart(2,'0'))} ${KH_M[d.getMonth()]}`;
+}
+function walBalance(id){
+  const w=walOf(id); let b=w.open||0;
+  state.txns.forEach(t=>{
+    if(t.t==='income'  && t.w===id) b+=t.a;
+    if(t.t==='expense' && t.w===id) b-=t.a;
+    if(t.t==='transfer'){ if(t.w===id) b-=t.a; if(t.w2===id) b+=t.a; }
+  });
+  return b;
+}
+function walFlow(id){
+  let i=0,o=0;
+  state.txns.filter(inView).forEach(t=>{
+    if(t.w===id && (t.t==='expense'||t.t==='transfer')) o+=t.a;
+    if(t.t==='income' && t.w===id) i+=t.a;
+    if(t.t==='transfer' && t.w2===id) i+=t.a;
+  });
+  return {i,o};
+}
+let toastTimer;
+function toast(msg){
+  const el=$('#toast'); el.textContent=msg; el.classList.add('on');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('on'),2200);
+}
+const buzz=n=>{ if(navigator.vibrate) navigator.vibrate(n); };
+
+/* ═══════════ ៣. ផ្ទៃ ភ្លឺ / ងងឹត ═══════════ */
+function setTheme(t){
+  state.theme=t;
+  document.documentElement.dataset.theme=t;
+  try{ localStorage.setItem('mn_theme',t); }catch(e){}
+  $('#tMoon').innerHTML=`<svg width="19" height="19" aria-hidden="true"><use href="#${t==='dark'?'c-sun':'c-moon'}"></use></svg>`;
+  $('#swDark').classList.toggle('on',t==='dark');
+  $('#swDark').setAttribute('aria-checked',t==='dark');
+  $('meta[name=theme-color]').setAttribute('content',t==='dark'?'#0B121C':'#2563EB');
+}
+setTheme(document.documentElement.dataset.theme==='dark'?'dark':'light');   // ធ្វើឱ្យ state + ប៊ូតុងស៊ីនឹងផ្ទៃដែលស្តារមកវិញ
+$('#tMoon').onclick=()=>setTheme(state.theme==='dark'?'light':'dark');
+$('#swDark').onclick=()=>setTheme(state.theme==='dark'?'light':'dark');
+$$('.sw').forEach(sw=>{
+  if(sw.id==='swDark') return;
+  sw.onclick=()=>{const on=sw.classList.toggle('on'); sw.setAttribute('aria-checked',on); buzz(6);};
+});
+
+/* ═══════════ ៤. ការស្វាគមន៍តាមម៉ោង ═══════════ */
+(function(){
+  const h=new Date().getHours();
+  $('#greet').textContent = h<12?'អរុណសួស្តី' : h<17?'ទិវាសួស្តី' : h<19?'សាយណ្ហសួស្តី' : 'រាត្រីសួស្តី';
+})();
+
+/* ═══════════ ៤.5 Supabase (Sync/Auth) ═══════════ */
+const SUPABASE_URL='https://iixzjqqwtxftfgcorlcr.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlpeHpqcXF3dHhmdGZnY29ybGNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5Mzc0MzYsImV4cCI6MjEwMTUxMzQzNn0.h2rZOqqtPQlgJhKUe4DfEXWfkmkA7C5YDorWH6mZMeA';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+let guestMode=false;
+
+// ---------- ការបំប្លែងទម្រង់ (client { t, cat, n, a, w, w2, d, tm } ⟷ Postgres columns) ----------
+function isoToDT(iso){
+  const dt=new Date(iso);
+  if(isNaN(dt)) return {d:TODAY, tm:'00:00'};
+  return {d:fmtDateVal(dt), tm:String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0')};
+}
+function dtToIso(d,tm){
+  const parts=String(tm||'00:00').split(':').map(Number);
+  const dt=parse(d); dt.setHours(parts[0]||0,parts[1]||0,0,0);
+  return dt.toISOString();
+}
+// បើតារាងមិនទាន់មានជួរ location កូដនឹងព្យាយាមម្តងទៀតដោយគ្មានវា (មិនបាច់រង់ចាំ SQL)
+let locSupported=true;
+function txToRow(t){
+  const row={type:t.t, category:t.cat||null, amount:t.a, note:t.n||'',
+             date:dtToIso(t.d,t.tm), wallet:t.w||null, wallet_to:t.w2||null};
+  if(locSupported) row.location=t.loc||null;
+  return row;
+}
+function rowToTx(r){
+  const {d,tm}=isoToDT(r.date);
+  return {id:r.id, t:r.type, cat:r.category, n:r.note||'', a:Number(r.amount)||0,
+          w:r.wallet||'', w2:r.wallet_to||'', d, tm, loc:r.location||''};
+}
+const missingLocCol = e => e && /location/i.test(e.message||'');
+// ── ទីតាំង៖ "ឈ្មោះ @lat,lng" · ផ្នែកណាមួយអាចខ្វះបាន ──
+function buildLoc(name,lat,lng){
+  const n=(name||'').trim();
+  if(lat&&lng) return (n? n+' ':'')+`@${lat},${lng}`;
+  return n;
+}
+function parseLoc(v){
+  const m=/^(.*?)\s*@(-?[\d.]+),(-?[\d.]+)$/.exec(v||'');
+  if(m) return {name:m[1].trim(), lat:m[2], lng:m[3]};
+  return {name:(v||'').trim(), lat:'', lng:''};
+}
+const locLabel = v => { const p=parseLoc(v); return p.name || (p.lat? 'ទីតាំងដែលបានកត់':''); };
+const mapURL   = p => `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
+function walletToRow(w){ return {name:w.n, sub:w.sub||'', style:w.style||'', color:w.color||'', open:w.open||0}; }
+function rowToWallet(r){ return {id:r.id, n:r.name, sub:r.sub, style:r.style, color:r.color, open:r.open}; }
+function goalToRow(g){ return {name:g.n, now_amount:g.now||0, target:g.tgt||0, due:g.due||''}; }
+function rowToGoal(r){ return {id:r.id, n:r.name, now:r.now_amount, tgt:r.target, due:r.due}; }
+function debtToRow(d){ return {dir:d.dir, name:d.n, amount:d.a||0, due:d.due||null, paid:!!d.paid}; }
+function rowToDebt(r){ return {id:r.id, dir:r.dir, n:r.name, a:r.amount, due:r.due, paid:r.paid}; }
+function recurToRow(t){
+  return {type:t.type, category:t.category||null, amount:t.amount, note:t.note||'',
+          wallet:t.wallet||null, wallet_to:t.walletTo||null, freq:t.freq, day_of_month:t.dayOfMonth||1,
+          start_date:t.startDate||null, last_applied:t.lastApplied||null, active:t.active!==false};
+}
+function rowToRecur(r){
+  return {id:r.id, type:r.type, category:r.category, amount:Number(r.amount)||0, note:r.note,
+          wallet:r.wallet||'', walletTo:r.wallet_to||'', freq:r.freq, dayOfMonth:r.day_of_month,
+          startDate:r.start_date, lastApplied:r.last_applied, active:r.active!==false};
+}
+
+// ---------- ទាញទិន្នន័យទាំងអស់ (ប្រតិបត្តិការ+កាបូប+គោលដៅ+បំណុល+ថវិកា+ដដែលៗ ក្នុងពេលដំណាលគ្នា) ----------
+async function fetchAll(){
+  if(guestMode) return;
+  try{
+    const [tx,wa,go,de,se,re]=await Promise.all([
+      sb.from('transactions').select('*'),
+      sb.from('wallets').select('*').eq('archived',false),
+      sb.from('goals').select('*'),
+      sb.from('debts').select('*'),
+      sb.from('settings').select('*').order('updated_at',{ascending:false}).limit(1),
+      sb.from('recurring').select('*'),
+    ]);
+    if(tx.data) state.txns=tx.data.map(rowToTx).sort(byDate);
+    if(wa.data) state.wallets=wa.data.map(rowToWallet);
+    if(go.data) state.goals=go.data.map(rowToGoal);
+    if(de.data) state.debts=de.data.map(rowToDebt);
+    if(se.data && se.data[0]) state.budget=se.data[0].budget||0;
+    if(re.data) state.recurring=re.data.map(rowToRecur);
+    cacheSave();
+  }catch(e){ /* គ្មានអ៊ីនធឺណិត — ប្រើទិន្នន័យ cache ដដែល */ }
+}
+
+// ---------- Cache ក្នុងម៉ាស៊ីន (ប្រើទាំង guest mode និងសម្រាប់បង្ហាញលឿនមុនទាញពី server) ----------
+function cacheKey(email){ return 'mn_cache_'+(email||'guest'); }
+function cacheSave(){
+  try{ localStorage.setItem(cacheKey(state.email), JSON.stringify({
+    txns:state.txns, wallets:state.wallets, goals:state.goals, debts:state.debts,
+    budget:state.budget, recurring:state.recurring,
+  })); }catch(e){}
+}
+function cacheLoad(email){
+  try{ return JSON.parse(localStorage.getItem(cacheKey(email))||'null'); }catch(e){ return null; }
+}
+
+function updateProfileUI(){
+  const authed=!guestMode && !!state.email;
+  $('#pName').textContent = authed? state.email : 'អ្នកភ្ញៀវ';
+  $('#pEmail').textContent = authed? 'បានចូលគណនី' : 'ទិន្នន័យក្នុងម៉ាស៊ីន (Guest)';
+  $('#pAv').textContent = authed? state.email.charAt(0).toUpperCase() : 'ស';
+  $('#bOut').style.display = authed? 'flex':'none';
+  $('#rowLogin').style.display = authed? 'none':'flex';
+  // លាក់ចំណងជើង + ប្រអប់ទទេ ពេលគ្មានជួរណាមួយបង្ហាញក្នុងក្រុម "គណនី"
+  const grp=$('#grpAccount');
+  grp.style.display = authed? 'none':'block';
+  if(grp.previousElementSibling) grp.previousElementSibling.style.display = authed? 'none':'block';
+}
+
+// ---------- ចូល app បន្ទាប់ពី auth/guest ជោគជ័យ ----------
+let _entered=false;
+async function enterApp(){
+  document.body.dataset.auth='in';
+  _entered=true;
+  const cached=cacheLoad(state.email);
+  if(cached) Object.assign(state,cached);
+  if(!guestMode) await fetchAll();
+  else if(!state.wallets.length) await addWallet({n:'សាច់ប្រាក់', sub:'កាបូបដៃ', style:'zest', color:'#8FA82A', open:0}, true);
+  await applyRecurring();
+  cacheSave();
+  updateProfileUI();
+  go('home');
+  refresh();
+  maybeShowLock();
+}
+
+// ---------- ការនាំផ្លូវរវាងអេក្រង់ auth (មុនចូល) ----------
+function showAuthScreen(name){
+  // សំអាត .screen ទាំងអស់ (app screens ដូចជា #s-more/#s-home ផងដែរ) — មិនមែនតែ ៤ ផ្ទាំង auth ទេ
+  // ព្រោះបើមិនដូច្នេះទេ ផ្ទាំង app ចាស់ (ឧ. ផ្សេងៗ) នៅតែមាន .on ជាប់សល់ ត្រួតលើផ្ទាំង auth ថ្មី
+  $$('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById('s-'+name).classList.add('on');
+}
+$('#splashStart').onclick=()=>showAuthScreen('welcome');
+$('#wSignin').onclick=()=>{ $('#loginErr').classList.remove('show'); showAuthScreen('login'); };
+$('#wSignup').onclick=()=>{ $('#signupErr').classList.remove('show'); showAuthScreen('signup'); };
+$('#loginBack').onclick=()=>showAuthScreen('welcome');
+$('#signupBack').onclick=()=>showAuthScreen('welcome');
+$('#wGuest').onclick=async()=>{
+  guestMode=true; state.email=null; localStorage.setItem('mn_guest','1');
+  await enterApp();
+};
+
+$('#loginSubmit').onclick=async()=>{
+  const email=$('#loginEmail').value.trim().toLowerCase();
+  const pass=$('#loginPass').value;
+  const err=$('#loginErr'); err.classList.remove('show');
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ err.textContent='អ៊ីមែលមិនត្រឹមត្រូវ'; err.classList.add('show'); return; }
+  if(pass.length<6){ err.textContent='ពាក្យសម្ងាត់ត្រូវយ៉ាងតិច ៦ តួ'; err.classList.add('show'); return; }
+  const btn=$('#loginSubmit'); btn.disabled=true; btn.textContent='កំពុងចូល...';
+  const {error}=await sb.auth.signInWithPassword({email, password:pass});
+  if(error){
+    const msgs={'Invalid login credentials':'អ៊ីមែល ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ'};
+    err.textContent=msgs[error.message]||('បរាជ័យ ('+error.message+')'); err.classList.add('show');
+  }
+  // ជោគជ័យ → sb.auth.onAuthStateChange() ខាងក្រោមហៅ enterApp() ដោយស្វ័យប្រវត្តិ
+  btn.disabled=false; btn.textContent='ចូល';
+};
+$('#signupSubmit').onclick=async()=>{
+  const email=$('#signupEmail').value.trim().toLowerCase();
+  const pass=$('#signupPass').value;
+  const err=$('#signupErr'); err.classList.remove('show');
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ err.textContent='អ៊ីមែលមិនត្រឹមត្រូវ'; err.classList.add('show'); return; }
+  if(pass.length<6){ err.textContent='ពាក្យសម្ងាត់ត្រូវយ៉ាងតិច ៦ តួ'; err.classList.add('show'); return; }
+  const btn=$('#signupSubmit'); btn.disabled=true; btn.textContent='កំពុងបង្កើត...';
+  const {data,error}=await sb.auth.signUp({email, password:pass});
+  if(error){
+    const msgs={'User already registered':'អ៊ីមែលនេះមានគណនីរួចហើយ — សូមចូលវិញ'};
+    err.textContent=msgs[error.message]||('បរាជ័យ ('+error.message+')'); err.classList.add('show');
+  }else if(data.user && !data.session){
+    // គណនីត្រូវការផ្ទៀងផ្ទាត់អ៊ីមែលសិន (អាស្រ័យលើការកំណត់ Supabase Auth)
+    toast('សូមពិនិត្យអ៊ីមែលរបស់អ្នក ដើម្បីបញ្ជាក់គណនីជាមុនសិន');
+  }
+  // បើមាន session ភ្លាម → onAuthStateChange ហៅ enterApp() ដោយស្វ័យប្រវត្តិ
+  btn.disabled=false; btn.textContent='បង្កើតគណនី';
+};
+
+// ---------- ចូលដោយ Google (redirect flow តាម Supabase Auth) ----------
+$('#wGoogle').onclick=async()=>{
+  const {error}=await sb.auth.signInWithOAuth({provider:'google', options:{redirectTo:window.location.href}});
+  if(error) toast('ការចូលដោយ Google បរាជ័យ ('+error.message+')');
+};
+
+$('#rowLogin').onclick=()=>{ document.body.dataset.auth=''; showAuthScreen('welcome'); };
+$('#bOut').onclick=async()=>{
+  if(!confirm('ចាកចេញពីគណនី? ទិន្នន័យក្នុងម៉ាស៊ីននឹងត្រូវលុប (នៅតែមានលើ server)')) return;
+  try{ localStorage.removeItem(cacheKey(state.email)); }catch(e){}   // កុំទុកទិន្នន័យអ្នកប្រើចាស់ក្នុងឧបករណ៍
+  await sb.auth.signOut();
+  guestMode=false; localStorage.removeItem('mn_guest');
+  state.txns=[]; state.wallets=[]; state.goals=[]; state.debts=[]; state.recurring=[]; state.budget=0;
+  // onAuthStateChange (SIGNED_OUT) ខាងក្រោមប្តូរអេក្រង់ទៅ welcome ដោយស្វ័យប្រវត្តិ
+};
+
+// ---------- ស្តាប់ស្ថានភាពគណនី Supabase — ប្រភពសច្ចភាពតែមួយសម្រាប់ "ចូល ឬអត់" ----------
+sb.auth.onAuthStateChange(async(event,session)=>{
+  if(session && session.user){
+    guestMode=false; state.email=session.user.email; localStorage.removeItem('mn_guest');
+    if(!_entered) await enterApp();
+  }else if(event==='SIGNED_OUT'){
+    state.email=null;
+    document.body.dataset.auth=''; _entered=false;
+    showAuthScreen('welcome');
+  }else if(event==='INITIAL_SESSION' && !session){
+    if(localStorage.getItem('mn_guest')==='1'){ guestMode=true; state.email=null; await enterApp(); }
+    // ផ្សេងទៀត៖ នៅលើ splash — អ្នកប្រើអាចចុច "ចាប់ផ្តើម"
+  }
+});
+
+/* ═══════════ ៤.7 កម្មវិធីផ្លាស់ប្តូរទិន្នន័យ (Mutators) — កន្លែងតែមួយគត់ដែលកែ state.* ═══════════
+   គ្រប់ mutator សុទ្ធតែធ្វើតាមទម្រង់ដូចគ្នា៖ កែ state ក្នុងម៉ាស៊ីនភ្លាម → cacheSave()+render →
+   guestMode ? រក្សាទុកតែក្នុងម៉ាស៊ីន : Supabase insert/update/delete (បើបរាជ័យ បង្ហាញ toast) */
+function persist(){ cacheSave(); }
+
+async function addTxn(t){
+  if(guestMode){
+    t.id=t.id||(Date.now().toString(36)+Math.random().toString(36).slice(2,8));
+    state.txns.unshift(t); state.txns.sort(byDate); persist(); refresh(); return t;
+  }
+  let {data,error}=await sb.from('transactions').insert(txToRow(t)).select().single();
+  if(missingLocCol(error)){                       // តារាងចាស់ — រក្សាទុកដោយគ្មានទីតាំង
+    locSupported=false;
+    ({data,error}=await sb.from('transactions').insert(txToRow(t)).select().single());
+    toast('ទីតាំងមិនទាន់រក្សាទុកបានទេ — សូមបន្ថែមជួរ location');
+  }
+  if(error){ toast('រក្សាទុកបរាជ័យ៖ '+error.message); return t; }
+  const saved=rowToTx(data);
+  state.txns.unshift(saved); state.txns.sort(byDate); persist(); refresh();
+  return saved;
+}
+async function updateTxn(t, quiet){
+  const idx=state.txns.findIndex(x=>x.id===t.id);
+  if(idx>=0) state.txns[idx]=t;
+  persist(); refresh();
+  if(guestMode) return;
+  let {error}=await sb.from('transactions').update(txToRow(t)).eq('id',t.id);
+  if(missingLocCol(error)){
+    locSupported=false;
+    ({error}=await sb.from('transactions').update(txToRow(t)).eq('id',t.id));
+  }
+  if(error && !quiet) toast('រក្សាទុកបរាជ័យ៖ '+error.message);
+}
+async function deleteTxn(id){
+  state.txns=state.txns.filter(x=>x.id!==id);
+  persist(); refresh();
+  if(guestMode) return;
+  const {error}=await sb.from('transactions').delete().eq('id',id);
+  if(error) toast('លុបបរាជ័យ៖ '+error.message);
+}
+
+async function addWallet(w, quiet){
+  if(guestMode){
+    w.id=w.id||(Date.now().toString(36)+Math.random().toString(36).slice(2,8));
+    state.wallets.push(w); persist(); refresh(); return w;
+  }
+  const {data,error}=await sb.from('wallets').insert(walletToRow(w)).select().single();
+  if(error){ if(!quiet) toast('រក្សាទុកបរាជ័យ៖ '+error.message); return w; }
+  const saved=rowToWallet(data);
+  state.wallets.push(saved); persist(); refresh();
+  return saved;
+}
+async function updateWallet(w){
+  const idx=state.wallets.findIndex(x=>x.id===w.id);
+  if(idx>=0) state.wallets[idx]=w;
+  persist(); refresh();
+  if(guestMode) return;
+  const {error}=await sb.from('wallets').update(walletToRow(w)).eq('id',w.id);
+  if(error) toast('រក្សាទុកបរាជ័យ៖ '+error.message);
+}
+async function deleteWallet(id){
+  state.wallets=state.wallets.filter(w=>w.id!==id);
+  persist(); refresh();
+  if(guestMode) return;
+  // ដកចេញទន់ (archived=true) — កុំលុបជួរ ព្រោះប្រតិបត្តិការចាស់ៗអាចនៅសំអាងលើ wallet id នេះ
+  const {error}=await sb.from('wallets').update({archived:true}).eq('id',id);
+  if(error) toast('លុបបរាជ័យ៖ '+error.message);
+}
+
+async function addGoal(g){
+  if(guestMode){
+    g.id=g.id||(Date.now().toString(36)+Math.random().toString(36).slice(2,8));
+    state.goals.push(g); persist(); refresh(); return g;
+  }
+  const {data,error}=await sb.from('goals').insert(goalToRow(g)).select().single();
+  if(error){ toast('រក្សាទុកបរាជ័យ៖ '+error.message); return g; }
+  const saved=rowToGoal(data);
+  state.goals.push(saved); persist(); refresh();
+  return saved;
+}
+async function updateGoal(g){
+  const idx=state.goals.findIndex(x=>x.id===g.id);
+  if(idx>=0) state.goals[idx]=g;
+  persist(); refresh();
+  if(guestMode) return;
+  const {error}=await sb.from('goals').update(goalToRow(g)).eq('id',g.id);
+  if(error) toast('រក្សាទុកបរាជ័យ៖ '+error.message);
+}
+async function deleteGoal(id){
+  state.goals=state.goals.filter(g=>g.id!==id);
+  persist(); refresh();
+  if(guestMode) return;
+  const {error}=await sb.from('goals').delete().eq('id',id);
+  if(error) toast('លុបបរាជ័យ៖ '+error.message);
+}
+
+async function addDebt(d){
+  if(guestMode){
+    d.id=d.id||(Date.now().toString(36)+Math.random().toString(36).slice(2,8));
+    state.debts.push(d); persist(); refresh(); return d;
+  }
+  const {data,error}=await sb.from('debts').insert(debtToRow(d)).select().single();
+  if(error){ toast('រក្សាទុកបរាជ័យ៖ '+error.message); return d; }
+  const saved=rowToDebt(data);
+  state.debts.push(saved); persist(); refresh();
+  return saved;
+}
+async function updateDebt(d){
+  const idx=state.debts.findIndex(x=>x.id===d.id);
+  if(idx>=0) state.debts[idx]=d;
+  persist(); refresh();
+  if(guestMode) return;
+  const {error}=await sb.from('debts').update(debtToRow(d)).eq('id',d.id);
+  if(error) toast('រក្សាទុកបរាជ័យ៖ '+error.message);
+}
+async function setDebtPaid(id, paid){
+  const d=state.debts.find(x=>x.id===id);
+  if(d) d.paid=paid;
+  persist(); refresh();
+  if(guestMode) return;
+  const {error}=await sb.from('debts').update({paid}).eq('id',id);
+  if(error) toast('រក្សាទុកបរាជ័យ៖ '+error.message);
+}
+async function deleteDebt(id){
+  state.debts=state.debts.filter(d=>d.id!==id);
+  persist(); refresh();
+  if(guestMode) return;
+  const {error}=await sb.from('debts').delete().eq('id',id);
+  if(error) toast('លុបបរាជ័យ៖ '+error.message);
+}
+
+async function setBudget(v){
+  state.budget=v;
+  persist();
+  if(guestMode) return;
+  // ត្រូវការ UNIQUE(user_id) លើតារាង settings បើមិនដូច្នេះទេ upsert ក្លាយជា insert ថ្មីរាល់ដង
+  const uid=(await sb.auth.getUser()).data.user.id;
+  const {error}=await sb.from('settings')
+    .upsert({user_id:uid, budget:v, updated_at:new Date().toISOString()}, {onConflict:'user_id'});
+  if(error) toast('រក្សាទុកបរាជ័យ៖ '+error.message);
+}
+
+async function addRecurring(t){
+  if(guestMode){
+    t.id=t.id||(Date.now().toString(36)+Math.random().toString(36).slice(2,8));
+    state.recurring.push(t); persist(); return t;
+  }
+  const {data,error}=await sb.from('recurring').insert(recurToRow(t)).select().single();
+  if(error){ toast('រក្សាទុកបរាជ័យ៖ '+error.message); return t; }
+  const saved=rowToRecur(data);
+  state.recurring.push(saved); persist();
+  return saved;
+}
+async function updateRecurring(t){
+  const idx=state.recurring.findIndex(x=>x.id===t.id);
+  if(idx>=0) state.recurring[idx]=t;
+  persist();
+  if(guestMode) return;
+  const {error}=await sb.from('recurring').update(recurToRow(t)).eq('id',t.id);
+  if(error) toast('រក្សាទុកបរាជ័យ៖ '+error.message);
+}
+async function deleteRecurring(id){
+  state.recurring=state.recurring.filter(x=>x.id!==id);
+  persist();
+  if(guestMode) return;
+  const {error}=await sb.from('recurring').delete().eq('id',id);
+  if(error) toast('លុបបរាជ័យ៖ '+error.message);
+}
+async function markRecurringApplied(id, lastApplied){
+  const t=state.recurring.find(x=>x.id===id);
+  if(t) t.lastApplied=lastApplied;
+  persist();
+  if(guestMode) return;
+  try{ await sb.from('recurring').update({last_applied:lastApplied}).eq('id',id); }catch(e){}
+}
+
+// applyRecurring(): កំណត់ថាតើប្រតិបត្តិការដដែលៗណាមួយដល់ថ្ងៃត្រូវបញ្ចូលហើយ — ហៅតែម្តងក្នុងមួយ enterApp()
+let _recurringApplied=false;
+async function applyRecurring(){
+  if(_recurringApplied) return;
+  _recurringApplied=true;
+  let count=0;
+  for(const tpl of state.recurring){
+    if(tpl.active===false) continue;
+    const occurrences=dueOccurrences(tpl);
+    if(!occurrences.length) continue;
+    for(const d of occurrences){
+      await addTxn({t:tpl.type, cat:tpl.category||null, n:tpl.note||catOf(tpl.type,tpl.category).n,
+                    a:tpl.amount, w:tpl.wallet||'', w2:tpl.walletTo||'', d, tm:'09:00'});
+      count++;
+    }
+    await markRecurringApplied(tpl.id, occurrences[occurrences.length-1]);
+  }
+  if(count) toast(`បានបញ្ចូលប្រតិបត្តិការដដែលៗ ${kh(count)} ដងស្វ័យប្រវត្តិ`);
+}
+// dueOccurrences(tpl): គណនាថ្ងៃដែលត្រូវអនុវត្ត ចាប់ពី lastApplied (ឬ startDate) រហូតដល់ TODAY (កំណត់ ១២ ដងក្នុងការហៅម្តង)
+function dueOccurrences(tpl){
+  const start=tpl.lastApplied||tpl.startDate;
+  if(!start) return [];
+  let cur=parse(start.slice(0,10));
+  const today=parse(TODAY);
+  const out=[];
+  if(tpl.lastApplied) advance(); // កុំធ្វើម្តងទៀតលើកាលបរិច្ឆេទដែលអនុវត្តរួច
+  while(cur<=today && out.length<12){ out.push(fmtDateVal(cur)); advance(); }
+  return out;
+  function advance(){
+    if(tpl.freq==='daily') cur=new Date(cur.getFullYear(),cur.getMonth(),cur.getDate()+1);
+    else if(tpl.freq==='weekly') cur=new Date(cur.getFullYear(),cur.getMonth(),cur.getDate()+7);
+    else cur=new Date(cur.getFullYear(),cur.getMonth()+1, Math.min(tpl.dayOfMonth||1,28));
+  }
+}
+
+/* ═══════════ ៥. អេក្រង់ដើម ═══════════ */
+function renderDeck(){
+  const inc=sumBy(t=>t.t==='income'&&inView(t));
+  const exp=sumBy(t=>t.t==='expense'&&inView(t));
+  const total=state.wallets.reduce((s,w)=>s+walBalance(w.id),0);
+  const cards=[{st:'', top:'សមតុល្យសរុប', sub:`${KH_M[VIEW.m]} ${kh(VIEW.y)}`, bal:total,
+                l1:'ចំណូល', v1:inc, l2:'ចំណាយ', v2:exp}]
+    .concat(state.wallets.map(w=>{
+      const f=walFlow(w.id);
+      return {st:cardStyle(w.color), top:w.n, sub:w.sub, bal:walBalance(w.id),
+              l1:'ចូល', v1:f.i, l2:'ចេញ', v2:f.o, id:w.id};
+    }));
+
+  $('#deck').innerHTML = cards.map((c,i)=>`
+    <button class="wcard" data-i="${i}" style="${c.st}">
+      <div class="wtop"><span>${c.top}</span><span>${c.sub}</span></div>
+      <div class="wnum">${moneyNum(c.bal)}<span class="cur">${curSym()}</span></div>
+      <div class="wfoot">
+        <div>${c.l1}<b>${moneyNum(c.v1)}</b></div>
+        <div>${c.l2}<b>${moneyNum(c.v2)}</b></div>
+      </div>
+    </button>`).join('');
+  $('#dots').innerHTML = cards.map((_,i)=>`<i class="dot${i===0?' on':''}"></i>`).join('');
+  $$('#deck .wcard').forEach(b=>b.onclick=()=>go('wallet'));
+}
+function renderBudget(animate){
+  const exp=sumBy(t=>t.t==='expense'&&inView(t));
+  const pct=Math.min(100, state.budget? exp/state.budget*100 : 0);
+  const left=state.budget-exp;
+  const last=new Date(VIEW.y, VIEW.m+1, 0).getDate();
+  const daysLeft=Math.max(0, last-parse(TODAY).getDate());
+  if(!state.budget){
+    $('#bBn').innerHTML=`${money(exp)} <i>ចំណាយក្នុងខែនេះ</i>`;
+    $('#bLeft').textContent='មិនទាន់កំណត់ថវិកា — ចុចដើម្បីកំណត់';
+  }else{
+    $('#bBn').innerHTML=`${moneyNum(exp)} <i>/ ${money(state.budget)}</i>`;
+    $('#bLeft').textContent = left>=0
+      ? `នៅសល់ ${money(left)} · ${kh(daysLeft)} ថ្ងៃទៀត`
+      : `លើសថវិកា ${money(-left)} · ${kh(daysLeft)} ថ្ងៃទៀត`;
+  }
+  $('#sBudget').textContent=state.budget? money(state.budget) : 'មិនទាន់កំណត់';
+  const C=213.6, arc=$('#arc'), lbl=$('#pct');
+  arc.setAttribute('stroke', (state.budget&&left<0)?'var(--expense)':'var(--brand)');
+  if(!animate){ arc.setAttribute('stroke-dashoffset', C-C*pct/100); lbl.textContent=Math.round(pct)+'%'; return; }
+  const t0=performance.now(), ease=x=>1-Math.pow(1-x,3);
+  (function run(now){
+    const p=Math.min(1,(now-t0)/900), e=ease(p);
+    lbl.textContent=Math.round(pct*e)+'%';
+    arc.setAttribute('stroke-dashoffset', C-C*pct*e/100);
+    if(p<1) requestAnimationFrame(run);
+  })(t0);
+}
+function itemHTML(t){
+  const c=catOf(t.t,t.cat);
+  const sign=t.t==='income'?'+':t.t==='expense'?'−':'';
+  const cls =t.t==='income'?'up':t.t==='expense'?'down':'';
+  const sub =t.t==='transfer' ? `${walOf(t.w).n} → ${walOf(t.w2).n}` : walOf(t.w).n;
+  return `<div class="swipe" data-id="${t.id}">
+    <div class="swipeacts">
+      <button class="sEdit" aria-label="កែសម្រួល"><svg width="19" height="19" aria-hidden="true"><use href="#c-pencil"></use></svg></button>
+      <button class="sDel" aria-label="លុប"><svg width="19" height="19" aria-hidden="true"><use href="#c-trash"></use></svg></button>
+    </div>
+    <button class="item" data-id="${t.id}">
+      <span class="ti" style="background:${c.c}"><svg width="20" height="20" aria-hidden="true"><use href="#${c.i}"></use></svg></span>
+      <div class="mid"><b>${t.n}</b><small>${sub} · ${dayLabel(t.d)} ${kh(t.tm)}${
+        t.loc? ` · <span class="txloc"><svg width="11" height="11" style="vertical-align:-1px" aria-hidden="true"><use href="#c-pin"></use></svg>${locLabel(t.loc)}</span>`:''
+      }</small></div>
+      <div class="amt ${cls}">${sign}${moneyNum(t.a)}</div>
+    </button>
+  </div>`;
+}
+// ── អូសទៅឆ្វេងដើម្បីកែ/លុប (បើកបានតែមួយក្នុងពេលតែមួយ) ──
+const SW_W=128;
+let openRow=null;
+function closeRow(){ if(openRow){ openRow.classList.remove('open'); openRow.style.removeProperty('--sx'); openRow=null; } }
+function bindItems(root){
+  root.querySelectorAll('.swipe').forEach((w,i)=>{
+    w.style.animationDelay=(i*.055)+'s';
+    const item=w.querySelector('.item');
+    const id=w.dataset.id;
+
+    item.onclick=()=>{ if(w.classList.contains('open')){ closeRow(); return; } closeRow(); openDetail(id); };
+    w.querySelector('.sEdit').onclick=()=>{
+      closeRow();
+      const t=state.txns.find(x=>x.id===id); if(t) openAdd(t.t,t);
+    };
+    w.querySelector('.sDel').onclick=async()=>{
+      closeRow(); buzz(14); await deleteTxn(id); toast('បានលុបប្រតិបត្តិការ');
+    };
+
+    let x0=0,y0=0,base=0,drag=null;
+    w.addEventListener('touchstart',e=>{
+      if(openRow && openRow!==w) closeRow();
+      x0=e.touches[0].clientX; y0=e.touches[0].clientY;
+      base=w.classList.contains('open')? -SW_W : 0; drag=null;
+    },{passive:true});
+    w.addEventListener('touchmove',e=>{
+      const dx=e.touches[0].clientX-x0, dy=e.touches[0].clientY-y0;
+      if(drag===null){
+        if(Math.abs(dx)<6 && Math.abs(dy)<6) return;
+        drag = Math.abs(dx)>Math.abs(dy);          // ផ្តេក = អូស · បញ្ឈរ = រំកិលទំព័រ
+        if(drag) w.classList.add('drag');
+      }
+      if(!drag) return;
+      const x=Math.max(-SW_W, Math.min(0, base+dx));
+      w.style.setProperty('--sx', x+'px');
+    },{passive:true});
+    w.addEventListener('touchend',()=>{
+      if(!drag){ drag=null; return; }
+      w.classList.remove('drag'); drag=null;
+      const x=parseFloat(getComputedStyle(w).getPropertyValue('--sx'))||0;
+      w.style.removeProperty('--sx');
+      if(x < -SW_W/2){ closeRow(); w.classList.add('open'); openRow=w; }
+      else if(openRow===w){ closeRow(); }
+    });
+  });
+}
+function renderRecent(){
+  const list=[...state.txns].sort(byDate).slice(0,5);
+  const box=$('#recent');
+  box.innerHTML = list.length ? list.map(itemHTML).join('')
+    : `<div class="empty"><svg width="34" height="34" aria-hidden="true"><use href="#c-wallet"></use></svg>
+       <b>មិនទាន់មានប្រតិបត្តិការ</b>ចុច ＋ ដើម្បីកត់ត្រាលើកដំបូង</div>`;
+  bindItems(box);
+}
+const byDate=(a,b)=> (b.d+b.tm).localeCompare(a.d+a.tm);
+
+/* ═══════════ ៦. បញ្ជីពេញ ═══════════ */
+function renderAll(){
+  const q=state.query.trim().toLowerCase();
+  const rows=state.txns
+    .filter(t=>state.filter==='all'||t.t===state.filter)
+    .filter(t=>!state.day || t.d===state.day)
+    .filter(t=>!q || t.n.toLowerCase().includes(q) || catOf(t.t,t.cat).n.includes(q)
+                  || (t.loc||'').toLowerCase().includes(q))
+    .sort(byDate);
+  $('#allCount').textContent=`${kh(rows.length)} ធាតុ`;
+  const box=$('#alllist');
+  if(!rows.length){
+    box.innerHTML=`<div class="empty"><svg width="34" height="34" aria-hidden="true"><use href="#c-search"></use></svg>
+      <b>រកមិនឃើញ</b>សាកល្បងពាក្យផ្សេង ឬដកចម្រោះចេញ</div>`;
+    return;
+  }
+  let html='', day='';
+  rows.forEach(t=>{
+    if(t.d!==day){
+      day=t.d;
+      const net=rows.filter(x=>x.d===day).reduce((s,x)=>s+(x.t==='income'?x.a:x.t==='expense'?-x.a:0),0);
+      html+=`<div class="daybar"><span>${dayLabel(day)}</span>
+        <span class="dsum ${net>0?'up':net<0?'down':''}">${net>0?'+':net<0?'−':''}${money(Math.abs(net))}</span></div>`;
+    }
+    html+=itemHTML(t);
+  });
+  box.innerHTML=html; bindItems(box);
+}
+$('#q').oninput=e=>{state.query=e.target.value; renderAll();};
+$$('#filters .chip').forEach(c=>c.onclick=()=>{
+  $$('#filters .chip').forEach(x=>x.classList.remove('on'));
+  c.classList.add('on'); state.filter=c.dataset.f; renderAll();
+});
+
+/* ── ៦.5 ទិដ្ឋភាពប្រតិទិន ── */
+let allMode='list', cvY=VIEW.y, cvM=VIEW.m;
+function renderCalView(){
+  $('#cvTitle').textContent=`${KH_M[cvM]} ${kh(cvY)}`;
+  const first=new Date(cvY,cvM,1).getDay();
+  const days=new Date(cvY,cvM+1,0).getDate();
+
+  // បូកសរុបចំណូល/ចំណាយតាមថ្ងៃ ក្នុងការឆ្លងកាត់តែម្តង
+  const byDay={};
+  state.txns.forEach(t=>{
+    const d=parse(t.d);
+    if(d.getFullYear()!==cvY || d.getMonth()!==cvM) return;
+    const k=t.d; (byDay[k]=byDay[k]||{i:0,e:0});
+    if(t.t==='income')  byDay[k].i+=t.a;
+    if(t.t==='expense') byDay[k].e+=t.a;
+  });
+
+  let html=KH_D.map(d=>`<span class="wd">${d.slice(0,2)}</span>`).join('');
+  for(let i=0;i<first;i++) html+='<span class="cday blank"></span>';
+  for(let d=1;d<=days;d++){
+    const ds=`${cvY}-${String(cvM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const v=byDay[ds];
+    html+=`<button class="cday${ds===TODAY?' today':''}${ds===state.day?' sel':''}" data-d="${ds}">
+      <span class="cn">${kh(d)}</span>
+      ${v&&v.i?`<span class="ci">+${moneyNum(v.i)}</span>`:''}
+      ${v&&v.e?`<span class="ce">−${moneyNum(v.e)}</span>`:''}
+    </button>`;
+  }
+  $('#cvGrid').innerHTML=html;
+  $$('#cvGrid .cday[data-d]').forEach(b=>b.onclick=()=>{
+    state.day = state.day===b.dataset.d ? null : b.dataset.d;
+    renderCalView(); renderAll(); buzz(5);
+  });
+  $('#cvDayLbl').textContent = state.day ? dayLabel(state.day) : `ទាំង${KH_M[cvM]}`;
+}
+function setAllMode(m){
+  allMode=m;
+  $$('#allModeSeg button').forEach(b=>b.classList.toggle('on', b.dataset.m===m));
+  $('#calView').style.display  = m==='cal' ? 'block':'none';
+  $('#listTools').style.display= m==='cal' ? 'none':'block';
+  if(m==='list') state.day=null; else { cvY=VIEW.y; cvM=VIEW.m; renderCalView(); }
+  renderAll();
+}
+$$('#allModeSeg button').forEach(b=>b.onclick=()=>setAllMode(b.dataset.m));
+$('#cvPrev').onclick=()=>{ cvM--; if(cvM<0){cvM=11;cvY--;} state.day=null; renderCalView(); renderAll(); };
+$('#cvNext').onclick=()=>{ cvM++; if(cvM>11){cvM=0;cvY++;} state.day=null; renderCalView(); renderAll(); };
+$('#cvClear').onclick=()=>{ state.day=null; renderCalView(); renderAll(); };
+
+/* ═══════════ ៧. ស្ថិតិ ═══════════ */
+// inMonth(t,view): ត្រូវប្រតិបត្តិការ t ក្នុងខែ/ឆ្នាំដែលបញ្ជាក់ក្នុង view ({y,m}) ដែរឬទេ
+function inMonth(t,view){ const d=parse(t.d); return d.getFullYear()===view.y && d.getMonth()===view.m; }
+// computeCategoryBreakdown(kind,view): បូកសរុបទឹកប្រាក់តាមប្រភេទ សម្រាប់ខែ view — ប្រើរួមទាំងស្ថិតិ និងរបាយការណ៍រូបភាព
+function computeCategoryBreakdown(kind,view){
+  const rows=state.txns.filter(t=>t.t===kind&&inMonth(t,view));
+  const total=rows.reduce((s,t)=>s+t.a,0);
+  const byCat={};
+  rows.forEach(t=>{ byCat[t.cat]=(byCat[t.cat]||0)+t.a; });
+  const arr=Object.entries(byCat).map(([id,v])=>({...catOf(kind,id), v})).sort((a,b)=>b.v-a.v);
+  return {rows,total,arr};
+}
+// computeMonthTotals(view): ចំណូល/ចំណាយសរុបសម្រាប់ខែ view
+function computeMonthTotals(view){
+  return {
+    inc: sumBy(t=>t.t==='income'&&inMonth(t,view)),
+    exp: sumBy(t=>t.t==='expense'&&inMonth(t,view)),
+  };
+}
+function shiftView(view,delta){
+  let m=view.m+delta, y=view.y;
+  while(m<0){m+=12;y--;} while(m>11){m-=12;y++;}
+  return {y,m};
+}
+function renderStats(){
+  const kind=state.statKind;
+  $('#statsMonthLbl').textContent=`${KH_M[statsView.m]} ${kh(statsView.y)}`;
+  const {total,arr}=computeCategoryBreakdown(kind,statsView);
+
+  // ដូណាត់
+  const R=70, C=2*Math.PI*R; let off=0;
+  $('#donut').innerHTML=
+    `<circle cx="88" cy="88" r="${R}" fill="none" stroke="var(--line)" stroke-width="17"/>` +
+    arr.map(c=>{
+      const len=total? c.v/total*C : 0;
+      const seg=`<circle cx="88" cy="88" r="${R}" fill="none" stroke="${c.c}" stroke-width="17"
+        stroke-dasharray="${Math.max(0,len-2.5)} ${C}" stroke-dashoffset="${-off}" stroke-linecap="round"/>`;
+      off+=len; return seg;
+    }).join('');
+  $('#dLabel').textContent = kind==='expense'?'ចំណាយសរុប':'ចំណូលសរុប';
+  $('#dTotal').textContent = money(total);
+
+  $('#legend').innerHTML = arr.length ? arr.map(c=>`
+    <div class="lrow">
+      <span class="ldot" style="background:${c.c}"></span>
+      <span class="lname">${c.n}
+        <span class="lbar"><i style="width:${total?c.v/total*100:0}%;background:${c.c}"></i></span>
+      </span>
+      <span class="lval">${moneyNum(c.v)}</span>
+      <span class="lpct">${kh(Math.round(total?c.v/total*100:0))}%</span>
+    </div>`).join('')
+    : `<p style="text-align:center;color:var(--soft);font-size:13px;margin:0">មិនទាន់មានទិន្នន័យសម្រាប់ខែនេះ</p>`;
+
+  // សូចនាករ
+  const {inc,exp}=computeMonthTotals(statsView);
+  const prevView=shiftView(statsView,-1);
+  const prev=computeMonthTotals(prevView).exp;
+  const diff=prev? (exp-prev)/prev*100 : 0;
+  const isCurMonth = statsView.y===VIEW.y && statsView.m===VIEW.m;
+  const days = isCurMonth ? parse(TODAY).getDate() : new Date(statsView.y,statsView.m+1,0).getDate();
+  $('#kpis').innerHTML=`
+    <div class="kpi"><small>សល់ក្នុងខែ</small><b>${money(inc-exp)}</b><em>ចំណូល − ចំណាយ</em></div>
+    <div class="kpi"><small>មធ្យមក្នុងមួយថ្ងៃ</small><b>${money(days?exp/days:0)}</b>
+      <em style="color:${diff>0?'var(--expense)':'var(--income)'}">${diff>0?'▲':'▼'} ${kh(Math.abs(Math.round(diff)))}% ធៀប${KH_M[prevView.m]}</em></div>`;
+
+  // និន្នាការ ៦ ខែ (រាប់ថយក្រោយពី statsView)
+  const trend=[];
+  for(let i=5;i>=0;i--){
+    const v=shiftView(statsView,-i);
+    trend.push({m:KH_M[v.m], e:computeMonthTotals(v).exp, now:v.y===statsView.y&&v.m===statsView.m});
+  }
+  const max=Math.max(...trend.map(x=>x.e))||1;
+  $('#bars').innerHTML=trend.map(x=>`
+    <div class="bar${x.now?' now':''}" title="${x.m} ${money(x.e)}">
+      <i style="height:${Math.max(6,x.e/max*100)}%"></i><span>${x.m}</span></div>`).join('');
+}
+$$('#s-stats .seg button').forEach(b=>b.onclick=()=>{
+  $$('#s-stats .seg button').forEach(x=>{x.classList.remove('on'); x.setAttribute('aria-selected','false');});
+  b.classList.add('on'); b.setAttribute('aria-selected','true');
+  state.statKind=b.dataset.k; renderStats();
+});
+$('#statsPrev').onclick=()=>{ statsView=shiftView(statsView,-1); renderStats(); };
+$('#statsNext').onclick=()=>{ statsView=shiftView(statsView,1); renderStats(); };
+
+/* ═══════════ ៨. កាបូប · គោលដៅ · បំណុល ═══════════ */
+function renderWallets(){
+  const total=state.wallets.reduce((s,w)=>s+walBalance(w.id),0);
+  $('#wTotal').textContent=`សរុប ${money(total)}`;
+  $('#wlist').innerHTML=state.wallets.length ? state.wallets.map(w=>{
+    const f=walFlow(w.id);
+    return `<button class="wrow" data-w="${w.id}">
+      <span class="wdot" style="background:${w.color}"><svg width="19" height="19" aria-hidden="true"><use href="#c-wallet"></use></svg></span>
+      <span class="mid"><b>${w.n}</b><small>ចូល ${moneyNum(f.i)} · ចេញ ${moneyNum(f.o)}</small></span>
+      <span class="amt">${money(walBalance(w.id))}</span>
+    </button>`;
+  }).join('') : `<div class="hint">មិនទាន់មានកាបូបទេ — ចុច ＋ ខាងលើ</div>`;
+  $$('#wlist .wrow').forEach(b=>b.onclick=()=>openWalletSheet(walOf(b.dataset.w)));
+
+  $('#glist').innerHTML=state.goals.length ? state.goals.map(g=>{
+    const p=Math.min(100,g.tgt?g.now/g.tgt*100:0);
+    return `<button class="goal" style="width:100%;border:none;text-align:left;cursor:pointer" data-g="${g.id}">
+      <div class="gt">${g.n}<span>${kh(Math.round(p))}%</span></div>
+      <div class="gbar"><i style="width:${p}%"></i></div>
+      <div class="gmeta"><span><b>${moneyNum(g.now)}</b> / ${money(g.tgt)}</span><span>គោលដៅ ${g.due}</span></div>
+    </button>`;
+  }).join('') : `<div class="hint">មិនទាន់មានគោលដៅសន្សំទេ</div>`;
+  $$('#glist [data-g]').forEach(b=>b.onclick=()=>openGoalSheet(state.goals.find(g=>g.id===b.dataset.g)));
+
+  $('#dlist').innerHTML=state.debts.length ? state.debts.map(d=>{
+    const inn=d.dir==='in';
+    return `<button class="wrow" data-d="${d.id}" style="opacity:${d.paid?.55:1}">
+      <span class="wdot" style="background:${inn?'var(--income)':'var(--expense)'}">
+        <svg width="19" height="19" aria-hidden="true"><use href="#c-hand"></use></svg></span>
+      <span class="mid"><b>${d.n}${d.paid?' ✓':''}</b><small>${inn?'គេជំពាក់យើង':'យើងជំពាក់គេ'} · កំណត់ ${khDateShort(d.due)}${d.paid?' · បានសង':''}</small></span>
+      <span class="amt ${inn?'up':'down'}">${inn?'+':'−'}${moneyNum(d.a)}</span>
+    </button>`;
+  }).join('') : `<div class="hint">មិនទាន់មានបំណុលទេ</div>`;
+  $$('#dlist [data-d]').forEach(b=>b.onclick=()=>openDebtSheet(state.debts.find(d=>d.id===b.dataset.d)));
+}
+$('#bAddWallet').onclick=()=>openWalletSheet(null);
+$$('[data-add]').forEach(b=>b.onclick=()=>b.dataset.add==='goal'?openGoalSheet(null):openDebtSheet(null));
+
+/* ═══════════ ៨.4 ការជូនដំណឹង (បំណុលជិត/ហួសកំណត់ + ថវិកា) ═══════════ */
+function khDateShort(iso){
+  if(!iso) return '—';
+  const d=parse(iso);
+  if(isNaN(d)) return iso;
+  return `${kh(String(d.getDate()).padStart(2,'0'))} ${KH_M[d.getMonth()]}`;
+}
+function renderNoti(){
+  const rows=[];
+  const todayD=parse(TODAY);
+  state.debts.filter(d=>!d.paid&&d.due).forEach(d=>{
+    const dueD=parse(d.due);
+    if(isNaN(dueD)) return;
+    const diff=(dueD-todayD)/86400000;
+    if(diff>3) return;
+    const over=diff<0;
+    rows.push({
+      color: over?'var(--expense)':'var(--brand)', icon:'c-hand',
+      title:`${d.n} ${d.dir==='in'?'ត្រូវសងយើង':'យើងត្រូវសង'} ${khDateShort(d.due)}${over?' (ហួសកំណត់)':''}`,
+      sub:`ចំនួន ${money(d.a)}`,
+    });
+  });
+  if(state.budget>0){
+    const exp=computeMonthTotals(VIEW).exp;
+    const pct=Math.round(exp/state.budget*100);
+    if(pct>=80){
+      rows.push({color:'var(--expense)', icon:'c-target', title:`ថវិកាប្រើអស់ ${kh(pct)}% ហើយ`,
+        sub: exp>state.budget ? `លើសថវិកា ${money(exp-state.budget)}` : `នៅសល់ ${money(state.budget-exp)}`});
+    }
+  }
+  $('#notiPanel').innerHTML = rows.length ? rows.map(r=>`
+    <div class="nrow"><span class="ni" style="background:${r.color}"><svg width="17" height="17" aria-hidden="true"><use href="#${r.icon}"></use></svg></span>
+      <div>${r.title}<small>${r.sub}</small></div></div>`).join('')
+    : `<p style="text-align:center;color:var(--soft);font-size:13px;margin:0">គ្មានការជូនដំណឹងថ្មីទេ</p>`;
+  $('#bNoti .badge').style.display = rows.length? 'block':'none';
+}
+
+/* ═══════════ ៨.5 កែ/លុប កាបូប · គោលដៅ · បំណុល ═══════════ */
+const WALLET_COLORS=['#312B63','#8FA82A','#2563EB','#F0523F','#0FA36B','#0EA5E9','#EC4899','#F59E0B'];
+// ── សាងកាតពីពណ៌កាបូបពិត ដើម្បីឱ្យកាតធំ និងបញ្ជីកាបូបប្រើពណ៌តែមួយ ──
+function hexRGB(h){
+  h=String(h||'').replace('#','');
+  if(h.length===3) h=h.split('').map(x=>x+x).join('');
+  if(!/^[0-9a-fA-F]{6}$/.test(h)) return null;
+  return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+}
+// ពន្លឺដែលភ្នែកមើលឃើញ — សម្រាប់សម្រេចថាអក្សរគួរស ឬខ្មៅ
+function luma(rgb){ return (0.2126*rgb[0] + 0.7152*rgb[1] + 0.0722*rgb[2])/255; }
+function mix(rgb,pct,white){
+  const t = white? 255:0;
+  return rgb.map(v=>Math.round(v + (t-v)*pct));
+}
+const rgbCSS = a => `rgb(${a[0]},${a[1]},${a[2]})`;
+function cardStyle(color){
+  const rgb=hexRGB(color) || hexRGB('#312B63');
+  const light = luma(rgb) > .55;                       // ពណ៌ភ្លឺ → អក្សរខ្មៅ
+  const a = light ? mix(rgb,.12,false) : rgb;          // ជ្រុងងងឹតបន្តិចនៃ gradient
+  const b = light ? rgb : mix(rgb,.28,true);           // ជ្រុងភ្លឺ
+  return `background:linear-gradient(145deg,${rgbCSS(a)},${rgbCSS(b)});`
+       + `color:${light?'#161B0A':'#fff'};`
+       + `box-shadow:0 18px 40px -18px rgba(${rgb[0]},${rgb[1]},${rgb[2]},.7);`;
+}
+let editingWallet=null, editingGoal=null, editingDebt=null;
+function openWalletSheet(w){
+  editingWallet=w;
+  $('#walletTitle').textContent = w? 'កែកាបូប' : 'បន្ថែមកាបូប';
+  $('#walName').value = w? w.n : '';
+  $('#wpName').textContent = (w? w.n : '') || 'កាបូបថ្មី';
+  $('#walSub').value = w? w.sub : '';
+  $('#walOpen').value = w? w.open : 0;
+  $('#walDelete').style.display = w? 'block':'none';
+  const chosen = w? w.color : WALLET_COLORS[state.wallets.length % WALLET_COLORS.length];
+  $('#walSwatches').innerHTML = WALLET_COLORS.map(c=>
+    `<button class="swatch${c===chosen?' on':''}" data-c="${c}" style="background:${c}"></button>`).join('');
+  $('#walSwatches').dataset.chosen=chosen;
+  const preview=c=>{ $('#walPreview').setAttribute('style', cardStyle(c)); };
+  preview(chosen);
+  $$('#walSwatches .swatch').forEach(b=>b.onclick=()=>{
+    $$('#walSwatches .swatch').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); $('#walSwatches').dataset.chosen=b.dataset.c; preview(b.dataset.c);
+  });
+  showSheet('#shWallet');
+}
+$('#walName').oninput=e=>{ $('#wpName').textContent = e.target.value.trim() || 'កាបូបថ្មី'; };
+$('#walSave').onclick=async()=>{
+  const name=$('#walName').value.trim();
+  if(!name){ toast('សូមបញ្ចូលឈ្មោះកាបូប'); return; }
+  const w={id:editingWallet?editingWallet.id:undefined, n:name, sub:$('#walSub').value.trim(),
+           style:editingWallet?editingWallet.style:'', color:$('#walSwatches').dataset.chosen,
+           open:Number($('#walOpen').value)||0};
+  hideSheet();
+  if(editingWallet) await updateWallet(w); else await addWallet(w);
+  toast('បានរក្សាទុកកាបូប');
+};
+$('#walDelete').onclick=async()=>{
+  if(!editingWallet) return;
+  if(!confirm('លុបកាបូបនេះ? ប្រតិបត្តិការចាស់ៗនៅតែរក្សាទុក')) return;
+  hideSheet(); await deleteWallet(editingWallet.id); toast('បានលុបកាបូប');
+};
+
+function openGoalSheet(g){
+  editingGoal=g;
+  $('#goalTitle').textContent = g? 'កែគោលដៅ' : 'បន្ថែមគោលដៅ';
+  $('#goalName').value = g? g.n : '';
+  $('#goalNow').value = g? g.now : 0;
+  $('#goalTgt').value = g? g.tgt : '';
+  $('#goalDue').value = g? g.due : '';
+  $('#goalDelete').style.display = g? 'block':'none';
+  showSheet('#shGoal');
+}
+$('#goalSave').onclick=async()=>{
+  const name=$('#goalName').value.trim();
+  const tgt=Number($('#goalTgt').value)||0;
+  if(!name||tgt<=0){ toast('សូមបញ្ចូលឈ្មោះ និងគោលដៅឱ្យបានត្រឹមត្រូវ'); return; }
+  const g={id:editingGoal?editingGoal.id:undefined, n:name, now:Number($('#goalNow').value)||0,
+           tgt, due:$('#goalDue').value.trim()};
+  hideSheet();
+  if(editingGoal) await updateGoal(g); else await addGoal(g);
+  toast('បានរក្សាទុកគោលដៅ');
+};
+$('#goalDelete').onclick=async()=>{
+  if(!editingGoal) return;
+  if(!confirm('លុបគោលដៅនេះ?')) return;
+  hideSheet(); await deleteGoal(editingGoal.id); toast('បានលុបគោលដៅ');
+};
+
+function openDebtSheet(d){
+  editingDebt=d;
+  $('#debtTitle').textContent = d? 'កែបំណុល' : 'បន្ថែមបំណុល';
+  $$('#debtDirSeg button').forEach(b=>b.classList.toggle('on', b.dataset.dir===(d?d.dir:'in')));
+  $('#debtName').value = d? d.n : '';
+  $('#debtAmt').value = d? d.a : '';
+  $('#debtDue').value = d? d.due : TODAY;
+  $('#debtPaidSw').classList.toggle('on', !!(d&&d.paid));
+  $('#debtPaidSw').setAttribute('aria-checked', String(!!(d&&d.paid)));
+  $('#debtDelete').style.display = d? 'block':'none';
+  showSheet('#shDebt');
+}
+$$('#debtDirSeg button').forEach(b=>b.onclick=()=>{
+  $$('#debtDirSeg button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+});
+$('#debtPaidSw').onclick=()=>{
+  const on=$('#debtPaidSw').classList.toggle('on');
+  $('#debtPaidSw').setAttribute('aria-checked', String(on));
+};
+$('#debtSave').onclick=async()=>{
+  const name=$('#debtName').value.trim();
+  const amt=Number($('#debtAmt').value)||0;
+  if(!name||amt<=0){ toast('សូមបញ្ចូលឈ្មោះ និងចំនួនប្រាក់ឱ្យបានត្រឹមត្រូវ'); return; }
+  const dir=$('#debtDirSeg button.on').dataset.dir;
+  const paid=$('#debtPaidSw').classList.contains('on');
+  const d={id:editingDebt?editingDebt.id:undefined, dir, n:name, a:amt, due:$('#debtDue').value.trim(), paid};
+  hideSheet();
+  if(editingDebt) await updateDebt(d); else await addDebt(d);
+  toast('បានរក្សាទុកបំណុល');
+};
+$('#debtDelete').onclick=async()=>{
+  if(!editingDebt) return;
+  if(!confirm('លុបបំណុលនេះ?')) return;
+  hideSheet(); await deleteDebt(editingDebt.id); toast('បានលុបបំណុល');
+};
+
+/* ═══════════ ៨.6 ប្រតិបត្តិការដដែលៗ (Recurring) ═══════════ */
+const FREQ_LABEL={monthly:'ប្រចាំខែ', weekly:'ប្រចាំសប្តាហ៍', daily:'ប្រចាំថ្ងៃ'};
+function renderRecurList(){
+  $('#recurList').innerHTML = state.recurring.length ? state.recurring.map(t=>{
+    const c=catOf(t.type,t.category);
+    return `<button class="item" data-id="${t.id}">
+      <span class="ti" style="background:${c.c}"><svg width="20" height="20" aria-hidden="true"><use href="#${c.i}"></use></svg></span>
+      <div class="mid"><b>${t.note||c.n}</b><small>${FREQ_LABEL[t.freq]||t.freq} · ${walOf(t.wallet).n}</small></div>
+      <div class="amt ${t.type==='income'?'up':'down'}">${moneyNum(t.amount)}</div>
+    </button>`;
+  }).join('') : `<div class="hint">មិនទាន់មានប្រតិបត្តិការដដែលៗទេ</div>`;
+  $$('#recurList .item').forEach(el=>el.onclick=()=>openRecurEdit(state.recurring.find(t=>t.id===el.dataset.id)));
+}
+$('#rowRecurring').onclick=()=>{ renderRecurList(); showSheet('#shRecurring'); };
+$('#recurNewBtn').onclick=()=>{ hideSheet(); setTimeout(()=>openRecurEdit(null),260); };
+
+let editingRecur=null, recurDraftType='expense', recurDraftCat=null, recurDraftWal=null, recurDraftFreq='monthly';
+function drawRecurCats(){
+  const list=CATS[recurDraftType]||[];
+  if(!list.some(c=>c.id===recurDraftCat)) recurDraftCat=list[0].id;
+  $('#recurCatGrid').innerHTML=list.map(c=>`
+    <button class="cat${c.id===recurDraftCat?' on':''}" data-c="${c.id}">
+      <i style="background:${c.c}"><svg width="18" height="18" aria-hidden="true"><use href="#${c.i}"></use></svg></i>${c.n}
+    </button>`).join('');
+  $$('#recurCatGrid .cat').forEach(b=>b.onclick=()=>{ recurDraftCat=b.dataset.c; drawRecurCats(); });
+}
+function drawRecurWals(){
+  $('#recurWalPick').innerHTML=state.wallets.map(w=>
+    `<button class="pk${w.id===recurDraftWal?' on':''}" data-w="${w.id}">${w.n}</button>`).join('');
+  $$('#recurWalPick .pk').forEach(b=>b.onclick=()=>{ recurDraftWal=b.dataset.w; drawRecurWals(); });
+}
+function openRecurEdit(t){
+  if(!state.wallets.length){ toast('សូមបន្ថែមកាបូបលុយជាមុនសិន'); return; }
+  editingRecur=t;
+  recurDraftType = t? t.type : 'expense';
+  recurDraftCat  = t? t.category : null;
+  recurDraftWal  = t? (t.wallet||state.wallets[0].id) : state.wallets[0].id;
+  recurDraftFreq = t? t.freq : 'monthly';
+  $('#recurEditTitle').textContent = t? 'កែប្រតិបត្តិការដដែលៗ' : 'បន្ថែមប្រតិបត្តិការដដែលៗ';
+  $$('#recurTypeSeg button').forEach(b=>b.classList.toggle('on', b.dataset.t===recurDraftType));
+  $('#recurAmt').value = t? t.amount : '';
+  $('#recurNote').value = t? t.note : '';
+  $('#recurDom').value = t? (t.dayOfMonth||1) : 1;
+  $('#recurDomRow').style.display = recurDraftFreq==='monthly' ? 'flex':'none';
+  $$('.pick .pk[data-f]').forEach(b=>b.classList.toggle('on', b.dataset.f===recurDraftFreq));
+  $('#recurDelete').style.display = t? 'block':'none';
+  drawRecurCats(); drawRecurWals();
+  showSheet('#shRecurEdit');
+}
+$$('#recurTypeSeg button').forEach(b=>b.onclick=()=>{
+  recurDraftType=b.dataset.t;
+  $$('#recurTypeSeg button').forEach(x=>x.classList.toggle('on', x===b));
+  drawRecurCats();
+});
+$$('#shRecurEdit [data-f]').forEach(b=>{
+  b.onclick=()=>{
+    recurDraftFreq=b.dataset.f;
+    $$('#shRecurEdit [data-f]').forEach(x=>x.classList.toggle('on', x===b));
+    $('#recurDomRow').style.display = recurDraftFreq==='monthly' ? 'flex':'none';
+  };
+});
+$('#recurSave').onclick=async()=>{
+  const amount=Number($('#recurAmt').value)||0;
+  if(amount<=0){ toast('សូមបញ្ចូលចំនួនទឹកប្រាក់'); return; }
+  const tpl={
+    id: editingRecur? editingRecur.id : undefined,
+    type:recurDraftType, category:recurDraftCat, amount, note:$('#recurNote').value.trim(),
+    wallet:recurDraftWal, walletTo:'', freq:recurDraftFreq, dayOfMonth:Number($('#recurDom').value)||1,
+    startDate: editingRecur? editingRecur.startDate : TODAY,
+    lastApplied: editingRecur? editingRecur.lastApplied : '',
+    active:true,
+  };
+  hideSheet();
+  if(editingRecur) await updateRecurring(tpl); else await addRecurring(tpl);
+  toast('បានរក្សាទុកប្រតិបត្តិការដដែលៗ');
+};
+$('#recurDelete').onclick=async()=>{
+  if(!editingRecur) return;
+  if(!confirm('លុបប្រតិបត្តិការដដែលៗនេះ?')) return;
+  hideSheet(); await deleteRecurring(editingRecur.id); toast('បានលុប');
+};
+
+/* ═══════════ ៨.7 សោកម្មវិធី (PIN lock) — រក្សានៅក្នុងឧបករណ៍ផ្ទាល់ មិន sync ទៅ server ═══════════ */
+async function sha256Hex(str){
+  const buf=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+let lockMode=null, lockBuf='', lockFirstPin='';
+function updateLockDots(){
+  $('#lockDots').innerHTML = Array.from({length:6},(_,i)=>`<span class="lockdot${i<lockBuf.length?' on':''}"></span>`).join('');
+}
+function openLock(mode){
+  lockMode=mode; lockBuf=''; lockFirstPin='';
+  $('#lockErr').textContent='';
+  $('#lockMsg').textContent = mode==='unlock' ? 'បញ្ចូលលេខសម្ងាត់' :
+    mode==='set' ? 'កំណត់លេខសម្ងាត់ថ្មី (៦ ខ្ទង់)' :
+    mode==='confirm' ? 'បញ្ចូលម្តងទៀត' : 'បញ្ចូលលេខសម្ងាត់បច្ចុប្បន្ន ដើម្បីបិទសោ';
+  updateLockDots();
+  $('#lockScreen').classList.remove('hide');
+  $('#lockPad [data-k="cancel"]').style.display = mode==='unlock' ? 'none':'block';
+}
+function closeLock(){ $('#lockScreen').classList.add('hide'); lockMode=null; lockBuf=''; }
+function maybeShowLock(){ if(localStorage.getItem('mn_pinEnabled')==='1') openLock('unlock'); }
+$('#lockPad').onclick=async e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  const k=b.dataset.k;
+  if(k==='cancel'){ closeLock(); return; }
+  if(k==='back'){ lockBuf=lockBuf.slice(0,-1); updateLockDots(); return; }
+  if(lockBuf.length>=6) return;
+  lockBuf+=k; updateLockDots(); buzz(4);
+  if(lockBuf.length<6) return;
+  if(lockMode==='unlock'){
+    const hash=await sha256Hex(lockBuf);
+    if(hash===localStorage.getItem('mn_pinHash')){ closeLock(); }
+    else{ $('#lockErr').textContent='លេខសម្ងាត់មិនត្រឹមត្រូវ'; lockBuf=''; updateLockDots(); buzz([20,20,20]); }
+  }else if(lockMode==='set'){
+    lockFirstPin=lockBuf; lockBuf=''; lockMode='confirm'; $('#lockMsg').textContent='បញ្ចូលម្តងទៀត'; updateLockDots();
+  }else if(lockMode==='confirm'){
+    if(lockBuf===lockFirstPin){
+      localStorage.setItem('mn_pinHash', await sha256Hex(lockBuf));
+      localStorage.setItem('mn_pinEnabled','1');
+      closeLock();
+      $('#swLock').classList.add('on'); $('#swLock').setAttribute('aria-checked','true');
+      toast('បានបើកសោកម្មវិធី');
+    }else{
+      $('#lockErr').textContent='លេខសម្ងាត់មិនដូចគ្នា — សូមព្យាយាមម្តងទៀត';
+      lockBuf=''; lockMode='set'; lockFirstPin=''; $('#lockMsg').textContent='កំណត់លេខសម្ងាត់ថ្មី (៦ ខ្ទង់)'; updateLockDots();
+    }
+  }else if(lockMode==='disable'){
+    const hash=await sha256Hex(lockBuf);
+    if(hash===localStorage.getItem('mn_pinHash')){
+      localStorage.removeItem('mn_pinHash'); localStorage.removeItem('mn_pinEnabled');
+      closeLock();
+      $('#swLock').classList.remove('on'); $('#swLock').setAttribute('aria-checked','false');
+      toast('បានបិទសោកម្មវិធី');
+    }else{ $('#lockErr').textContent='លេខសម្ងាត់មិនត្រឹមត្រូវ'; lockBuf=''; updateLockDots(); buzz([20,20,20]); }
+  }
+};
+$('#swLock').onclick=()=>{
+  const enabled=localStorage.getItem('mn_pinEnabled')==='1';
+  openLock(enabled?'disable':'set');
+};
+let _wasHidden=false;
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){ _wasHidden=true; }
+  else if(_wasHidden && localStorage.getItem('mn_pinEnabled')==='1' && document.body.dataset.auth==='in'){ openLock('unlock'); }
+});
+if(localStorage.getItem('mn_pinEnabled')==='1'){
+  $('#swLock').classList.add('on'); $('#swLock').setAttribute('aria-checked','true');
+}
+
+/* ═══════════ ៩. ការប្តូរអេក្រង់ ═══════════ */
+function go(name){
+  state.screen=name;
+  $$('.screen').forEach(s=>s.classList.toggle('on', s.id==='s-'+name));
+  $$('.nb').forEach(b=>b.classList.toggle('on', b.dataset.s===name));
+  $('#nav').style.display = name==='all' ? 'none' : 'flex';
+  $('#fab').classList.toggle('hide', name==='more');
+  closeFab();
+  if(name==='stats')  renderStats();
+  if(name==='wallet') renderWallets();
+  if(name==='all')    { cvY=VIEW.y; cvM=VIEW.m; setAllMode(allMode); }
+  if(name==='home')   {
+    TODAY=fmtDateVal(new Date()); VIEW={y:new Date().getFullYear(), m:new Date().getMonth()};
+    renderDeck(); renderBudget(false); renderRecent();
+  }
+  window.scrollTo({top:0, behavior:'instant'});
+}
+$$('.nb').forEach(b=>b.onclick=()=>go(b.dataset.s));
+$('#bAll').onclick=()=>go('all');
+$('#bBack').onclick=()=>go('home');
+$$('.qbtn').forEach(b=>b.onclick=()=>{
+  const q=b.dataset.q;
+  if(q==='stats')  return go('stats');
+  if(q==='transfer') return openAdd('transfer');
+  go('wallet');
+  setTimeout(()=>$(q==='goals'?'#secGoals':'#secDebts').scrollIntoView({behavior:'smooth',block:'start'}),80);
+});
+
+/* ═══════════ ១០. FAB ═══════════ */
+let fabOpen=false;
+function closeFab(){
+  fabOpen=false; $('#fab').classList.remove('on'); $('#fab').setAttribute('aria-expanded','false');
+  ['#m1','#m2','#m3'].forEach(s=>$(s).classList.remove('show'));
+}
+$('#fab').onclick=()=>{
+  fabOpen=!fabOpen;
+  $('#fab').classList.toggle('on',fabOpen);
+  $('#fab').setAttribute('aria-expanded',String(fabOpen));
+  ['#m1','#m2','#m3'].forEach(s=>$(s).classList.toggle('show',fabOpen));
+  buzz(8);
+};
+$$('.mini button').forEach(b=>b.onclick=()=>{closeFab(); openAdd(b.dataset.t);});
+
+/* ═══════════ ១១. សន្លឹក ═══════════ */
+let openSheet=null, lastFocus=null;
+function showSheet(id){
+  lastFocus=document.activeElement;
+  openSheet=id;
+  $('#scrim').classList.add('on');
+  $(id).classList.add('on');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>{const f=$(id).querySelector('button,input'); if(f) f.focus({preventScroll:true});},340);
+}
+function hideSheet(){
+  if(!openSheet) return;
+  $(openSheet).classList.remove('on');
+  $('#scrim').classList.remove('on');
+  document.body.style.overflow='';
+  openSheet=null;
+  if(lastFocus) lastFocus.focus({preventScroll:true});
+}
+$('#scrim').onclick=hideSheet;
+$$('[data-close]').forEach(b=>b.onclick=hideSheet);
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ openSheet?hideSheet():closeFab(); } });
+
+$('#bNoti').onclick=()=>{ renderNoti(); showSheet('#shNoti'); };
+
+/* ── រូបិយប័ណ្ណ និងអត្រាប្តូរប្រាក់ ── */
+function updateRateSub(){
+  $('#sRateSub').textContent = `បង្ហាញជា ${state.display==='USD'?'ដុល្លារ':'រៀល'} · ១$ = ${fmt(state.rate)}៛`;
+}
+$('#rowRate').onclick=()=>{
+  $('#rateIn').value=state.rate;
+  $$('#dispPick .pk').forEach(b=>b.classList.toggle('on', b.dataset.d===state.display));
+  showSheet('#shRate');
+};
+$$('#dispPick .pk').forEach(b=>b.onclick=()=>{
+  $$('#dispPick .pk').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+});
+$('#rateSave').onclick=()=>{
+  const r=Number($('#rateIn').value)||0;
+  if(r<=0){ toast('អត្រាប្តូរប្រាក់ត្រូវធំជាងសូន្យ'); return; }
+  state.rate=r;
+  state.display=$('#dispPick .pk.on').dataset.d;
+  try{ localStorage.setItem('mn_rate',String(r)); localStorage.setItem('mn_display',state.display); }catch(e){}
+  hideSheet(); updateRateSub(); refresh();
+  toast(`បង្ហាញជា${state.display==='USD'?'ដុល្លារ':'រៀល'} · ១$ = ${fmt(r)}៛`);
+};
+
+/* ── សមកាលកម្មដោយដៃ ── */
+$('#rowSync').onclick=async()=>{
+  if(guestMode){ toast('របៀបអ្នកភ្ញៀវ — ទិន្នន័យរក្សាក្នុងម៉ាស៊ីនតែប៉ុណ្ណោះ'); return; }
+  $('#syncSub').textContent='កំពុងទាញ...';
+  await fetchAll();
+  refresh();
+  const now=new Date();
+  $('#syncSub').textContent='ធ្វើបច្ចុប្បន្នភាពចុងក្រោយ '+kh(String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'));
+  toast('បានធ្វើសមកាលកម្មរួចរាល់');
+};
+
+/* ── ជួរដែលមុខងារមិនទាន់រួចរាល់ ── */
+$$('[data-soon]').forEach(b=>b.onclick=()=>toast(b.dataset.soon+' — មិនទាន់មាននៅកំណែនេះទេ'));
+
+/* ── ថវិកា ── */
+$('#bBudget').onclick=$('[data-go="budget"]').onclick=()=>{
+  $('#budIn').value=state.budget; showSheet('#shBudget');
+};
+$$('#budQuick .chip').forEach(c=>c.onclick=()=>{ $('#budIn').value=c.dataset.v; });
+$('#budSave').onclick=async()=>{
+  const v=Math.max(0,+$('#budIn').value||0);
+  hideSheet();
+  await setBudget(v);
+  renderBudget(true); renderStats();
+  toast(`កំណត់ថវិកា ${money(v)} សម្រាប់ខែនេះ`);
+};
+
+/* ═══════════ ១២. បន្ថែម / កែ ប្រតិបត្តិការ ═══════════ */
+const draft={type:'expense', cat:'food', wal:'aba', wal2:'cash', date:TODAY, expr:'0', cur:'KHR',
+             lat:'', lng:'', editing:null};
+let batch=[];   // មុខផ្សេងទៀតដែលរង់ចាំរក្សាទុករួមគ្នា
+
+function evalExpr(s){
+  const parts=String(s).split(/([+\-])/).filter(x=>x!=='');
+  let out=Number(parts[0]||0);
+  for(let i=1;i<parts.length;i+=2){
+    const v=Number(parts[i+1]||0);
+    out = parts[i]==='+' ? out+v : out-v;
+  }
+  if(!isFinite(out)) out=0;
+  return Math.max(0, out);
+}
+// draftKHR(): តម្លៃចុងក្រោយជា "រៀល" — បម្លែងបើកំពុងបញ្ចូលជាដុល្លារ
+function draftKHR(){
+  const v=evalExpr(draft.expr);
+  return Math.round(draft.cur==='USD' ? v*state.rate : v);
+}
+const groupInt = str => Number(str||0).toLocaleString('en-US');
+function drawAmt(){
+  // រក្សាអ្វីដែលអ្នកប្រើវាយពិត (រួមទាំងចំណុចទសភាគ) ត្រឹមតែបន្ថែមក្បៀស
+  const showing=draft.expr.replace(/\d+(\.\d*)?/g, m=>{
+    const [i,d]=m.split('.');
+    return groupInt(i)+(d!==undefined?'.'+d:'');
+  });
+  const el=$('#amtDisp');
+  el.className='big '+(draft.type==='income'?'income':draft.type==='expense'?'expense':'');
+  el.innerHTML=`${showing}<i>${draft.cur==='USD'?'$':'៛'}</i>`;
+  const khr=draftKHR();
+  $('#amtConv').textContent = draft.cur==='USD'
+    ? (khr? `≈ ${fmt(khr)}៛  (១$ = ${fmt(state.rate)}៛)` : '')
+    : (khr? `≈ ${(khr/state.rate).toFixed(2)}$` : '');
+}
+// setCur(): ប្តូររូបិយប័ណ្ណបញ្ចូល — គ្រាប់ "000" ក្លាយជា "." ពេលបញ្ចូលជាដុល្លារ
+function setCur(c){
+  draft.cur=c;
+  $$('#curPick .pk').forEach(b=>b.classList.toggle('on', b.dataset.c===c));
+  const ex=$('#padExtra');
+  ex.dataset.k = c==='USD' ? '.' : '000';
+  ex.textContent = c==='USD' ? '.' : '000';
+  drawAmt();
+}
+$$('#curPick .pk').forEach(b=>b.onclick=()=>{ setCur(b.dataset.c); buzz(5); });
+
+/* ── បញ្ចូលច្រើនមុខក្នុងម្តង ── */
+function renderBatch(){
+  $('#batchList').innerHTML = batch.map((b,i)=>`
+    <span class="bchip">${catOf(b.t,b.cat).n} <b>${moneyNum(b.a)}</b>
+      <button data-i="${i}" aria-label="ដកចេញ">✕</button></span>`).join('');
+  $$('#batchList button').forEach(b=>b.onclick=()=>{ batch.splice(+b.dataset.i,1); renderBatch(); });
+  $('#saveBtn').textContent = batch.length
+    ? `រក្សាទុកទាំង ${kh(batch.length+1)} មុខ`
+    : (draft.editing? 'រក្សាទុកការកែ':'រក្សាទុក');
+}
+$('#addMore').onclick=()=>{
+  const a=draftKHR();
+  if(a<=0){ toast('សូមបញ្ចូលចំនួនទឹកប្រាក់ជាមុនសិន'); return; }
+  if(draft.type==='transfer'){ toast('ការផ្ទេរមិនអាចបញ្ចូលច្រើនមុខទេ'); return; }
+  batch.push({t:draft.type, cat:draft.cat, a,
+              n:$('#noteIn').value.trim()||catOf(draft.type,draft.cat).n,
+              loc:buildLoc($('#locIn').value, draft.lat, draft.lng),
+              w:draft.wal, w2:'', d:draft.date});
+  draft.expr='0'; $('#noteIn').value='';
+  drawAmt(); renderBatch(); buzz(8);
+  toast('បានបន្ថែមទៅបញ្ជី — បញ្ចូលមុខបន្ទាប់');
+};
+function drawCats(){
+  const list=CATS[draft.type]||[];
+  $('#catGrid').innerHTML=list.map(c=>`
+    <button class="cat${c.id===draft.cat?' on':''}" data-c="${c.id}">
+      <i style="background:${c.c}"><svg width="18" height="18" aria-hidden="true"><use href="#${c.i}"></use></svg></i>${c.n}
+    </button>`).join('');
+  $$('#catGrid .cat').forEach(b=>b.onclick=()=>{draft.cat=b.dataset.c; drawCats(); buzz(5);});
+}
+function drawWals(){
+  const mk=(sel,cur,key)=>{
+    $(sel).innerHTML=state.wallets.map(w=>`<button class="pk${w.id===cur?' on':''}" data-w="${w.id}">${w.n}</button>`).join('');
+    $$(sel+' .pk').forEach(b=>b.onclick=()=>{
+      draft[key]=b.dataset.w;
+      // ជៀសវាង crash ពេលមានកាបូបតែមួយ — find() អាចត្រឡប់ undefined
+      if(key==='wal'  && draft.wal===draft.wal2){
+        const alt=state.wallets.find(w=>w.id!==draft.wal);  if(alt) draft.wal2=alt.id;
+      }
+      if(key==='wal2' && draft.wal===draft.wal2){
+        const alt=state.wallets.find(w=>w.id!==draft.wal2); if(alt) draft.wal =alt.id;
+      }
+      drawWals(); buzz(5);
+    });
+  };
+  mk('#walPick', draft.wal, 'wal');
+  mk('#frWal',   draft.wal, 'wal');
+  mk('#toWal',   draft.wal2,'wal2');
+}
+function drawDate(){
+  const d=parse(draft.date);
+  $('#dateBtn').textContent = draft.date===TODAY ? 'ថ្ងៃនេះ'
+    : `${kh(String(d.getDate()).padStart(2,'0'))} ${KH_M[d.getMonth()]}`;
+}
+function setType(t){
+  draft.type=t;
+  if(t!=='transfer'){
+    const list=CATS[t];
+    if(!list.some(c=>c.id===draft.cat)) draft.cat=list[0].id;
+  }
+  $$('#typeSeg button').forEach(b=>b.classList.toggle('on', b.dataset.t===t));
+  $('#catWrap').style.display = t==='transfer'?'none':'block';
+  $('#walRow').style.display  = t==='transfer'?'none':'flex';
+  $('#trWrap').style.display  = t==='transfer'?'block':'none';
+  if(!draft.editing) $('#batchWrap').style.display = t==='transfer'?'none':'block';
+  $('#addTitle').textContent = draft.editing ? 'កែប្រតិបត្តិការ'
+    : t==='income'?'បន្ថែមចំណូល' : t==='expense'?'បន្ថែមចំណាយ' : 'ផ្ទេរប្រាក់';
+  drawCats(); drawAmt();
+}
+function openAdd(type, tx){
+  if(!state.wallets.length){ toast('សូមបន្ថែមកាបូបលុយជាមុនសិន (ផ្ទាំង កាបូប)'); return; }
+  if(type==='transfer' && !tx && state.wallets.length<2){ toast('ការផ្ទេរត្រូវការកាបូបយ៉ាងតិច ២'); return; }
+  const w1=state.wallets[0].id, w2=(state.wallets[1]||state.wallets[0]).id;
+  draft.editing = tx? tx.id : null;
+  draft.type    = tx? tx.t : type;
+  draft.cat     = tx? (tx.cat||'food') : (CATS[type]?CATS[type][0].id:'food');
+  draft.wal     = tx? (tx.w||w1) : w1;
+  draft.wal2    = tx? (tx.w2||w2) : w2;
+  draft.date    = tx? tx.d  : TODAY;
+  draft.expr    = tx? String(tx.a) : '0';
+  $('#noteIn').value = tx? tx.n : '';
+  const lp=parseLoc(tx? tx.loc : '');
+  $('#locIn').value=lp.name; draft.lat=lp.lat; draft.lng=lp.lng;
+  $('#locBtn').classList.toggle('on', !!lp.lat);
+  batch=[];                                   // សម្អាតបញ្ជីមុខផ្សេងរាល់ពេលបើកថ្មី
+  draft.cur='KHR';
+  $('#batchWrap').style.display = (tx || type==='transfer') ? 'none':'block';
+  setCur('KHR'); renderBatch();
+  setType(draft.type); drawWals(); drawDate();
+  showSheet('#shAdd');
+}
+$$('#typeSeg button').forEach(b=>b.onclick=()=>setType(b.dataset.t));
+
+/* ── ទីតាំងបច្ចុប្បន្ន (GPS) ── */
+$('#locBtn').onclick=()=>{
+  if(draft.lat){                                   // ចុចម្តងទៀត = ដកកូអរដោនេចេញ
+    draft.lat=draft.lng=''; $('#locBtn').classList.remove('on');
+    toast('បានដកកូអរដោនេចេញ'); return;
+  }
+  if(!navigator.geolocation){ toast('ឧបករណ៍នេះមិនគាំទ្រទីតាំងទេ'); return; }
+  toast('កំពុងកំណត់ទីតាំង...');
+  navigator.geolocation.getCurrentPosition(pos=>{
+    draft.lat=pos.coords.latitude.toFixed(5);
+    draft.lng=pos.coords.longitude.toFixed(5);
+    $('#locBtn').classList.add('on'); buzz(10);
+    toast('បានកត់ត្រាទីតាំងបច្ចុប្បន្ន');
+  }, err=>{
+    toast(err.code===1 ? 'សូមអនុញ្ញាតការចូលប្រើទីតាំងក្នុងកម្មវិធីរុករក'
+                       : 'មិនអាចកំណត់ទីតាំងបានទេ');
+  }, {enableHighAccuracy:true, timeout:10000, maximumAge:60000});
+};
+
+$('#pad').onclick=e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  const k=b.dataset.k; buzz(4);
+  if(k==='clear'){ draft.expr='0'; }
+  else if(k==='back'){ draft.expr=draft.expr.slice(0,-1)||'0'; }
+  else if(k==='='){ const v=evalExpr(draft.expr); draft.expr=String(draft.cur==='USD'? +v.toFixed(2) : Math.round(v)); }
+  else if(k==='.'){
+    const tail=draft.expr.split(/[+\-]/).pop();
+    if(!tail.includes('.')) draft.expr += tail===''?'0.':'.';
+  }
+  else if(k==='+'||k==='-'){
+    if(/[+\-]$/.test(draft.expr)) draft.expr=draft.expr.slice(0,-1)+k;
+    else draft.expr+=k;
+  }
+  else {
+    if(draft.expr==='0') draft.expr = k==='000' ? '0' : k;
+    else draft.expr+=k;
+    const tail=draft.expr.split(/[+\-]/).pop();
+    if(tail.length>10) draft.expr=draft.expr.slice(0,-k.length);
+  }
+  drawAmt();
+};
+$('#saveBtn').onclick=async()=>{
+  const a=draftKHR();
+  if(a<=0 && !batch.length){ toast('សូមបញ្ចូលចំនួនទឹកប្រាក់ជាមុនសិន'); return; }
+  if(draft.type==='transfer' && draft.wal===draft.wal2){ toast('សូមជ្រើសកាបូបពី និងទៅ ឱ្យខុសគ្នា'); return; }
+  const loc  = buildLoc($('#locIn').value, draft.lat, draft.lng);
+  const name = $('#noteIn').value.trim() ||
+    (draft.type==='transfer' ? `ផ្ទេរទៅ ${walOf(draft.wal2).n}` : catOf(draft.type,draft.cat).n);
+  if(draft.editing){
+    const t=state.txns.find(x=>x.id===draft.editing);
+    Object.assign(t,{t:draft.type, cat:draft.type==='transfer'?null:draft.cat, n:name, a, loc,
+                     w:draft.wal, w2:draft.type==='transfer'?draft.wal2:'', d:draft.date});
+    hideSheet(); buzz(12);
+    await updateTxn(t);
+    toast('បានរក្សាទុកការកែ');
+  }else{
+    const pending=[...batch];
+    if(a>0) pending.push({t:draft.type, cat:draft.type==='transfer'?null:draft.cat, n:name, a, loc,
+                          w:draft.wal, w2:draft.type==='transfer'?draft.wal2:'', d:draft.date});
+    batch=[]; hideSheet(); buzz(12);
+    const tm=new Date().toTimeString().slice(0,5);
+    let sum=0;
+    for(const it of pending){ await addTxn({...it, tm}); sum+=it.a; }
+    toast(pending.length>1
+      ? `បានកត់ត្រា ${kh(pending.length)} មុខ · សរុប ${money(sum)}`
+      : `បានកត់ត្រា ${money(sum)}`);
+  }
+};
+
+/* ═══════════ ១៣. ព័ត៌មានលម្អិត ═══════════ */
+function openDetail(id){
+  const t=state.txns.find(x=>x.id===id); if(!t) return;
+  const c=catOf(t.t,t.cat);
+  const sign=t.t==='income'?'+':t.t==='expense'?'−':'';
+  const d=parse(t.d);
+  $('#detailBody').innerHTML=`
+    <div class="dhero">
+      <span class="ti" style="background:${c.c}"><svg width="24" height="24" aria-hidden="true"><use href="#${c.i}"></use></svg></span>
+      <div class="big ${t.t==='income'?'up':t.t==='expense'?'down':''}">${sign}${money(t.a)}</div>
+      <p>${t.n}</p>
+    </div>
+    <div class="panel" style="margin:0 0 var(--sp4); padding:var(--sp2) 0">
+      <div class="kv"><span>ប្រភេទ</span><b>${c.n}</b></div>
+      <div class="kv"><span>កាបូប</span><b>${t.t==='transfer'?`${walOf(t.w).n} → ${walOf(t.w2).n}`:walOf(t.w).n}</b></div>
+      <div class="kv"><span>កាលបរិច្ឆេទ</span><b>ថ្ងៃ${KH_D[d.getDay()]} ${kh(String(d.getDate()).padStart(2,'0'))} ${KH_M[d.getMonth()]} ${kh(d.getFullYear())}</b></div>
+      <div class="kv"><span>ម៉ោង</span><b class="num">${kh(t.tm)}</b></div>
+      ${t.loc? `<div class="kv"><span>ទីតាំង</span>${
+        parseLoc(t.loc).lat
+          ? `<a class="maplink" href="${mapURL(parseLoc(t.loc))}" target="_blank" rel="noopener">
+               <svg width="14" height="14" aria-hidden="true"><use href="#c-pin"></use></svg>${locLabel(t.loc)} · បើកផែនទី</a>`
+          : `<b>${locLabel(t.loc)}</b>`
+      }</div>`:''}
+    </div>
+    <button class="save" id="dEdit"><svg width="17" height="17" style="vertical-align:-3px" aria-hidden="true"><use href="#c-pencil"></use></svg> កែសម្រួល</button>
+    <button class="save ghost" id="dDel"><svg width="17" height="17" style="vertical-align:-3px" aria-hidden="true"><use href="#c-trash"></use></svg> លុបចោល</button>`;
+  showSheet('#shDetail');
+  $('#dEdit').onclick=()=>{ hideSheet(); setTimeout(()=>openAdd(t.t,t),260); };
+  $('#dDel').onclick=async()=>{
+    hideSheet(); buzz(14);
+    await deleteTxn(id);
+    toast('បានលុបប្រតិបត្តិការ');
+  };
+}
+
+/* ═══════════ ១៤. ប្រតិទិន ═══════════ */
+let calY=VIEW.y, calM=VIEW.m;
+$('#dateBtn').onclick=()=>{
+  const d=parse(draft.date); calY=d.getFullYear(); calM=d.getMonth();
+  drawCal(); showSheet('#shCal');
+};
+$('#calPrev').onclick=()=>{ calM--; if(calM<0){calM=11;calY--;} drawCal(); };
+$('#calNext').onclick=()=>{ calM++; if(calM>11){calM=0;calY++;} drawCal(); };
+function drawCal(){
+  $('#calTitle').textContent=`${KH_M[calM]} ${kh(calY)}`;
+  const first=new Date(calY,calM,1).getDay();
+  const days=new Date(calY,calM+1,0).getDate();
+  let html=KH_D.map(d=>`<span class="wd">${d.slice(0,2)}</span>`).join('');
+  for(let i=0;i<first;i++) html+='<span></span>';
+  for(let d=1;d<=days;d++){
+    const ds=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const future=ds>TODAY;
+    html+=`<button data-d="${ds}" class="${ds===draft.date?'on':''}${future?' mut':''}" ${future?'disabled':''}>${kh(d)}</button>`;
+  }
+  $('#calGrid').innerHTML=html;
+  $$('#calGrid button').forEach(b=>b.onclick=()=>{
+    draft.date=b.dataset.d; drawDate(); hideSheet();
+    setTimeout(()=>showSheet('#shAdd'),120);
+  });
+}
+
+/* ═══════════ ១៥. នាំចេញ CSV + របាយការណ៍រូបភាព ═══════════ */
+function csvEscape(v){ const s=String(v??''); return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; }
+function exportCSV(){
+  if(!state.txns.length){ toast('មិនទាន់មានប្រតិបត្តិការសម្រាប់នាំចេញទេ'); return; }
+  const headers=['កាលបរិច្ឆេទ','ម៉ោង','ប្រភេទប្រតិបត្តិការ','ចំណាត់ថ្នាក់','កំណត់ចំណាំ','ចំនួនទឹកប្រាក់(៛)','កាបូប','កាបូបទទួល','ទីតាំង','ឡាទីទុត','ឡុងទីទុត'];
+  const typeLabel={income:'ចំណូល', expense:'ចំណាយ', transfer:'ផ្ទេរ'};
+  const rows=[...state.txns].sort(byDate).map(t=>[
+    t.d, t.tm, typeLabel[t.t]||t.t, t.cat?catOf(t.t,t.cat).n:'', t.n, t.a, walOf(t.w).n, t.w2?walOf(t.w2).n:'',
+    parseLoc(t.loc).name, parseLoc(t.loc).lat, parseLoc(t.loc).lng,
+  ]);
+  const csv='﻿'+[headers,...rows].map(r=>r.map(csvEscape).join(',')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`money-note-${TODAY}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+  toast(`បាននាំចេញ ${kh(state.txns.length)} ជួរ`);
+}
+$('#bExport').onclick=exportCSV;
+
+// ---------- បម្រុងទុក / ស្តារទិន្នន័យ (JSON) ----------
+function exportJSON(){
+  const payload={
+    app:'money-note', version:1, exportedAt:new Date().toISOString(),
+    wallets:state.wallets, txns:state.txns, goals:state.goals,
+    debts:state.debts, budget:state.budget, recurring:state.recurring,
+  };
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`money-note-backup-${TODAY}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+  toast('បានបម្រុងទុកទិន្នន័យ');
+}
+$('#bBackup').onclick=exportJSON;
+
+// restoreFromJSON(file): នាំចូលទិន្នន័យពីឯកសារ JSON — បន្ថែម (merge) ទៅលើទិន្នន័យបច្ចុប្បន្ន មិនលុបចោលទេ
+// wallet id ចាស់ៗត្រូវផ្គូផ្គងទៅ id ថ្មី (server បង្កើតឱ្យ) ដើម្បីឱ្យប្រតិបត្តិការ/ដដែលៗនៅតែភ្ជាប់កាបូបត្រឹមត្រូវ
+async function restoreFromJSON(file){
+  let data;
+  try{ data=JSON.parse(await file.text()); }
+  catch(e){ toast('ឯកសារមិនត្រឹមត្រូវ — ត្រូវជាឯកសារ JSON ដែលបាននាំចេញពី Money Note'); return; }
+  if(!data||typeof data!=='object'||!Array.isArray(data.wallets)){
+    toast('ទម្រង់ឯកសារមិនត្រឹមត្រូវ'); return;
+  }
+  const nW=data.wallets.length, nT=(data.txns||[]).length, nG=(data.goals||[]).length, nD=(data.debts||[]).length;
+  if(!confirm(`នាំចូល ${kh(nW)} កាបូប, ${kh(nT)} ប្រតិបត្តិការ, ${kh(nG)} គោលដៅ, ${kh(nD)} បំណុល ពីឯកសារនេះ?\nទិន្នន័យបច្ចុប្បន្នរបស់អ្នកនឹងមិនត្រូវបានលុបចោលទេ (បន្ថែមចូលគ្នា)`)) return;
+
+  toast('កំពុងស្តារទិន្នន័យ...');
+  const walletIdMap={};
+  for(const w of data.wallets){
+    const saved=await addWallet({n:w.n, sub:w.sub, style:w.style, color:w.color, open:w.open}, true);
+    walletIdMap[w.id]=saved.id;
+  }
+  for(const g of (data.goals||[])) await addGoal({n:g.n, now:g.now, tgt:g.tgt, due:g.due});
+  for(const d of (data.debts||[])) await addDebt({dir:d.dir, n:d.n, a:d.a, due:d.due, paid:d.paid});
+  for(const t of (data.txns||[])){
+    await addTxn({t:t.t, cat:t.cat, n:t.n, a:t.a, loc:t.loc||'',
+      w:walletIdMap[t.w]||'', w2:t.w2?(walletIdMap[t.w2]||''):'', d:t.d, tm:t.tm});
+  }
+  for(const r of (data.recurring||[])){
+    await addRecurring({type:r.type, category:r.category, amount:r.amount, note:r.note,
+      wallet:walletIdMap[r.wallet]||'', walletTo:r.walletTo?(walletIdMap[r.walletTo]||''):'',
+      freq:r.freq, dayOfMonth:r.dayOfMonth, startDate:r.startDate, lastApplied:r.lastApplied, active:r.active});
+  }
+  if(typeof data.budget==='number' && data.budget>0 && !state.budget) await setBudget(data.budget);
+  refresh();
+  toast('បានស្តារទិន្នន័យរួចរាល់');
+}
+$('#bRestore').onclick=()=>$('#restoreFile').click();
+$('#restoreFile').onchange=async e=>{
+  const file=e.target.files[0]; e.target.value='';
+  if(file) await restoreFromJSON(file);
+};
+
+// generateReport(): គូររូបភាពសង្ខេបប្រចាំខែជា canvas — ប្រើ computeCategoryBreakdown/computeMonthTotals ដូចផ្ទាំងស្ថិតិ
+async function generateReport(){
+  // ផ្ទុក font ជាមុន បើមិនដូច្នេះទេអក្សរខ្មែរអាចចេញជាប្រអប់ □ លើឧបករណ៍ខ្លះ
+  const KFONT="'Kantumruy Pro', 'Noto Sans Khmer', sans-serif";
+  try{
+    if(document.fonts){
+      await Promise.all(["400 22px 'Kantumruy Pro'","500 28px 'Kantumruy Pro'",
+                         "600 34px 'Kantumruy Pro'","700 74px 'Kantumruy Pro'"]
+                        .map(f=>document.fonts.load(f)));
+      await document.fonts.ready;
+    }
+  }catch(e){}
+  const W=1080, H=1350;
+  const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+  const ctx=cv.getContext('2d');
+  const g=ctx.createLinearGradient(0,0,W,H);
+  g.addColorStop(0,'#2563EB'); g.addColorStop(1,'#60A5FA');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='rgba(255,255,255,.08)'; ctx.beginPath(); ctx.arc(W-60,60,260,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.textBaseline='alphabetic';
+  ctx.font=`600 34px ${KFONT}`; ctx.fillText('Money Note', 64, 96);
+  ctx.font=`700 52px ${KFONT}`; ctx.fillText(`${KH_M[statsView.m]} ${statsView.y}`, 64, 168);
+
+  const {inc,exp}=computeMonthTotals(statsView);
+  ctx.font=`500 26px ${KFONT}`; ctx.globalAlpha=.85; ctx.fillText('សល់ក្នុងខែ', 64, 250); ctx.globalAlpha=1;
+  ctx.font=`700 74px ${KFONT}`; ctx.fillText(`${fmt(inc-exp)} ៛`, 64, 336);
+
+  ctx.font=`500 26px ${KFONT}`; ctx.globalAlpha=.85;
+  ctx.fillText('ចំណូល', 64, 410); ctx.fillText('ចំណាយ', W/2+30, 410); ctx.globalAlpha=1;
+  ctx.font=`700 40px ${KFONT}`;
+  ctx.fillText(fmt(inc)+'៛', 64, 456); ctx.fillText(fmt(exp)+'៛', W/2+30, 456);
+
+  // Top categories
+  const {arr}=computeCategoryBreakdown('expense', statsView);
+  ctx.font=`600 30px ${KFONT}`; ctx.fillText('ចំណាយកំពូល', 64, 560);
+  let y=610;
+  arr.slice(0,5).forEach(c=>{
+    ctx.fillStyle='rgba(255,255,255,.14)'; roundRect(ctx,64,y-38,W-128,64,16); ctx.fill();
+    ctx.fillStyle=c.c; ctx.beginPath(); ctx.arc(100,y-6,10,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.font=`500 28px ${KFONT}`; ctx.fillText(c.n, 128, y);
+    ctx.textAlign='right'; ctx.fillText(fmt(c.v)+'៛', W-96, y); ctx.textAlign='left';
+    y+=80;
+  });
+
+  // Wallet balances
+  ctx.font=`600 30px ${KFONT}`; ctx.fillText('សមតុល្យកាបូប', 64, y+30); y+=80;
+  state.wallets.forEach(w=>{
+    ctx.fillStyle='rgba(255,255,255,.14)'; roundRect(ctx,64,y-38,W-128,64,16); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.font=`500 28px ${KFONT}`; ctx.fillText(w.n, 96, y);
+    ctx.textAlign='right'; ctx.fillText(fmt(walBalance(w.id))+'៛', W-96, y); ctx.textAlign='left';
+    y+=80;
+  });
+
+  ctx.globalAlpha=.7; ctx.font=`400 22px ${KFONT}`;
+  ctx.fillText('បង្កើតដោយ Money Note', 64, H-48); ctx.globalAlpha=1;
+
+  return new Promise(res=>cv.toBlob(blob=>res(blob), 'image/png'));
+}
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+}
+let lastReportBlob=null;
+$('#bReport').onclick=async()=>{
+  toast('កំពុងបង្កើតរូបភាព...');
+  const blob=await generateReport();
+  lastReportBlob=blob;
+  $('#reportImg').src=URL.createObjectURL(blob);
+  showSheet('#shReport');
+};
+$('#reportShare').onclick=async()=>{
+  if(!lastReportBlob) return;
+  const file=new File([lastReportBlob], `money-note-${statsView.y}-${statsView.m+1}.png`, {type:'image/png'});
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    try{ await navigator.share({files:[file], title:'Money Note'}); return; }catch(e){}
+  }
+  const url=URL.createObjectURL(lastReportBlob);
+  const a=document.createElement('a'); a.href=url; a.download=file.name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+};
+
+/* ═══════════ ១៦. ចំណុចតាមកាតដែលអូស ═══════════ */
+$('#deck').addEventListener('scroll',()=>{
+  const deck=$('#deck'), cards=$$('#deck .wcard');
+  const mid=deck.scrollLeft+deck.clientWidth/2;
+  let best=0, dist=Infinity;
+  cards.forEach((c,i)=>{
+    const cc=c.offsetLeft+c.offsetWidth/2-deck.offsetLeft;
+    const dd=Math.abs(cc-mid);
+    if(dd<dist){dist=dd; best=i;}
+  });
+  $$('#dots .dot').forEach((d,i)=>d.classList.toggle('on', i===best));
+},{passive:true});
+
+/* ═══════════ ១៧. ចាប់ផ្តើម ═══════════ */
+function refresh(){
+  renderDeck(); renderBudget(false); renderRecent(); renderNoti();
+  $('#sRecur').textContent=`${kh(state.recurring.length)} ធាតុ`;
+  if(state.screen==='stats')  renderStats();
+  if(state.screen==='wallet') renderWallets();
+  if(state.screen==='all')  { renderAll(); if(allMode==='cal') renderCalView(); }
+}
+$('#sCats').textContent=kh(CATS.expense.length+CATS.income.length)+' ប្រភេទ';
+updateRateSub();
+
+/* ═══════════ ១៨. Service Worker (ដំណើរការ offline + ដំឡើងលើ home screen) ═══════════
+   ចំណាំ៖ SW ចុះឈ្មោះបានតែលើ https:// ឬ localhost ប៉ុណ្ណោះ — file:// មិនបានទេ */
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  });
+}
+// ចំណាំ៖ ការចាប់ផ្តើម session (guest ឬ Supabase auth) ដំណើរការនៅ sb.auth.onAuthStateChange ក្នុងផ្នែក ៤.5 ខាងលើ
+</script>
+</body>
+</html>
