@@ -515,6 +515,35 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
 .hint{font-size:12px; color:var(--soft); text-align:center; padding:var(--sp3) 0;}
 .dbtn{width:100%; border:none; border-radius:var(--r-md); padding:14px; cursor:pointer; background:var(--sink); color:var(--expense); font-size:14px; font-weight:600; margin-top:var(--sp2);}
 
+/* ── គ្រប់គ្រងប្រភេទ ── */
+.catlist{display:flex; flex-direction:column; gap:var(--sp2); margin-bottom:var(--sp4);
+  max-height:44vh; overflow-y:auto;}
+.catrow{display:flex; align-items:center; gap:var(--sp3); background:var(--card);
+  border:none; border-radius:var(--r-md); padding:var(--sp3) var(--sp4); cursor:pointer;
+  box-shadow:var(--shadow); text-align:left; font-family:var(--khmer); color:var(--ink);}
+.catrow .ci2{width:36px; height:36px; flex:0 0 36px; border-radius:12px; color:#fff;
+  display:flex; align-items:center; justify-content:center;}
+.catrow b{flex:1; min-width:0; font-size:14px; font-weight:500; overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap;}
+.catrow small{font-size:11px; color:var(--soft);}
+.catrow.off{opacity:.45;}
+.icongrid{display:grid; grid-template-columns:repeat(5,1fr); gap:var(--sp2); margin-bottom:var(--sp4);}
+.icongrid button{border:none; cursor:pointer; border-radius:13px; padding:11px 0;
+  background:var(--sink); color:var(--soft); display:flex; align-items:center; justify-content:center;
+  transition:all .2s var(--spring);}
+.icongrid button.on{background:var(--brand); color:#fff;}
+
+/* ── ជម្រើសភាសា ── */
+.langopt{display:flex; align-items:center; gap:var(--sp3); width:100%; border:none; cursor:pointer;
+  background:var(--card); border-radius:var(--r-md); padding:var(--sp4); margin-bottom:var(--sp2);
+  box-shadow:var(--shadow); text-align:left; font-family:var(--khmer); color:var(--ink);}
+.langopt b{font-size:15px; font-weight:600;}
+.langopt small{flex:1; font-size:11.5px; color:var(--soft);}
+.langopt .lgcheck{width:26px; height:26px; border-radius:50%; display:flex; align-items:center;
+  justify-content:center; background:var(--brand); color:#fff; opacity:0; transition:opacity .2s;}
+.langopt.on .lgcheck{opacity:1;}
+.langopt.on{box-shadow:0 0 0 2px var(--brand), var(--shadow);}
+
 /* ── ជម្រើសពណ៌កម្មវិធី ── */
 .accgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:var(--sp3); margin-bottom:var(--sp4);}
 .accopt{border:none; cursor:pointer; border-radius:var(--r-md); padding:var(--sp4) var(--sp2);
@@ -665,6 +694,7 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
 <symbol id="c-investment" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19h16"/><path d="m5 15 4.5-5 3.5 3.5L19 6"/><path d="M15 6h4v4"/></symbol>
 <symbol id="c-tip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 4v16"/><path d="M15.5 7.5A3 3 0 0 0 12.8 6h-1.4a2.6 2.6 0 0 0-.4 5.2l2 .3a2.6 2.6 0 0 1-.4 5.2h-1.4a3 3 0 0 1-2.7-1.5"/></symbol>
 <symbol id="c-parttime" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 1.8"/></symbol>
+<symbol id="c-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
 <symbol id="c-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/></symbol>
 <symbol id="c-exchange" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 8h13l-3-3M20 16H7l3 3"/></symbol>
 <symbol id="c-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.7-6"/><path d="M20 4v5h-5"/></symbol>
@@ -822,7 +852,7 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
         <b id="pct">0%</b>
       </div>
       <div class="bmid">
-        <small>ថវិកាខែសីហា</small>
+        <small id="budLbl">ថវិកាប្រចាំខែ</small>
         <div class="bn" id="bBn"></div>
         <p id="bLeft"></p>
       </div>
@@ -955,9 +985,9 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
     </div>
     <div class="glabel">អំពី</div>
     <div class="group">
-      <button class="srow" data-soon="ការប្តូរភាសា">
+      <button class="srow" id="rowLang">
         <span class="si"><svg width="17" height="17" aria-hidden="true"><use href="#c-globe"></use></svg></span>
-        <span class="stxt">ភាសា</span><span class="sval">ខ្មែរ</span>
+        <span class="stxt">ភាសា</span><span class="sval" id="sLang">ខ្មែរ</span>
         <svg width="16" height="16" style="color:var(--soft)" aria-hidden="true"><use href="#c-chev"></use></svg>
       </button>
       <button class="srow">
@@ -1213,6 +1243,40 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
   <button class="save" id="reportShare" style="margin-top:var(--sp4)">ចែករំលែក / រក្សាទុក</button>
 </div>
 
+<div class="sheet" id="shCats" role="dialog" aria-modal="true" aria-label="គ្រប់គ្រងប្រភេទ">
+  <div class="grip"></div>
+  <div class="stitle"><b>គ្រប់គ្រងប្រភេទ</b>
+    <button class="xbtn" data-close aria-label="បិទ"><svg width="16" height="16" aria-hidden="true"><use href="#c-x"></use></svg></button></div>
+  <div class="seg" id="catTypeSeg">
+    <button class="on" data-t="expense">ចំណាយ</button>
+    <button data-t="income">ចំណូល</button>
+  </div>
+  <div id="catList" class="catlist"></div>
+  <button class="addmore" id="catAdd" type="button">＋ បន្ថែមប្រភេទថ្មី</button>
+</div>
+
+<div class="sheet" id="shCatEdit" role="dialog" aria-modal="true" aria-label="ប្រភេទ">
+  <div class="grip"></div>
+  <div class="stitle"><b id="ceTitle">ប្រភេទថ្មី</b>
+    <button class="xbtn" data-close aria-label="បិទ"><svg width="16" height="16" aria-hidden="true"><use href="#c-x"></use></svg></button></div>
+  <div class="frow"><label for="ceName">ឈ្មោះ</label><input id="ceName" maxlength="24" placeholder="ឧ. កាហ្វេ"></div>
+  <div class="glabel" style="padding-left:4px">ពណ៌</div>
+  <div class="swatches" id="ceColors"></div>
+  <div class="glabel" style="padding-left:4px">រូបតំណាង</div>
+  <div class="icongrid" id="ceIcons"></div>
+  <button class="save" id="ceSave">រក្សាទុក</button>
+  <button class="save ghost" id="ceDel" style="display:none">លុបប្រភេទនេះ</button>
+</div>
+
+<div class="sheet" id="shLang" role="dialog" aria-modal="true" aria-label="ភាសា">
+  <div class="grip"></div>
+  <div class="stitle"><b>ភាសា</b>
+    <button class="xbtn" data-close aria-label="បិទ"><svg width="16" height="16" aria-hidden="true"><use href="#c-x"></use></svg></button></div>
+  <button class="langopt" data-l="km"><b>ខ្មែរ</b><small>ភាសាខ្មែរ</small><span class="lgcheck"><svg width="15" height="15" aria-hidden="true"><use href="#c-check"></use></svg></span></button>
+  <button class="langopt" data-l="en"><b>English</b><small>ភាសាអង់គ្លេស</small><span class="lgcheck"><svg width="15" height="15" aria-hidden="true"><use href="#c-check"></use></svg></span></button>
+  <p class="hint">កម្មវិធីនឹងផ្ទុកឡើងវិញដើម្បីប្តូរភាសា</p>
+</div>
+
 <div class="sheet" id="shAccent" role="dialog" aria-modal="true" aria-label="ពណ៌កម្មវិធី">
   <div class="grip"></div>
   <div class="stitle"><b>ពណ៌កម្មវិធី</b>
@@ -1243,8 +1307,249 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
 <script>
 "use strict";
 /* ═══════════ ១. ទិន្នន័យ ═══════════ */
-const KH_M = ['មករា','កុម្ភៈ','មីនា','មេសា','ឧសភា','មិថុនា','កក្កដា','សីហា','កញ្ញា','តុលា','វិច្ឆិកា','ធ្នូ'];
-const KH_D = ['អាទិត្យ','ចន្ទ','អង្គារ','ពុធ','ព្រហស្បតិ៍','សុក្រ','សៅរ៍'];
+
+/* ═══════════════════════════════════════════════════════════════
+   ១.0 ភាសា (i18n)
+   វិធីសាស្ត្រ៖ វចនានុក្រមមានកូនសោជា "អត្ថបទខ្មែរដើម" — មិនមែនកូដដូច k1,k2
+   ដូច្នេះកូដនៅតែអានយល់ ហើយបើខ្វះការបកប្រែណាមួយ វាធ្លាក់ត្រឡប់ទៅខ្មែរវិញ
+   ដោយស្វ័យប្រវត្តិ (មិនដែលបង្ហាញកូនសោទទេ)។
+   ═══════════════════════════════════════════════════════════════ */
+let LANG='km';
+try{ const l=localStorage.getItem('mn_lang'); if(l==='en') LANG='en'; }catch(e){}
+document.documentElement.lang=LANG;
+
+const EN={
+/* — ការរុករក និងចំណងជើង — */
+'ដើម':'Home','ស្ថិតិ':'Stats','កាបូប':'Wallets','ការកំណត់':'Settings',
+'ប្រតិបត្តិការទាំងអស់':'All transactions','ប្រតិបត្តិការតាមកាបូប':'Wallet transactions',
+'ប្រតិបត្តិការថ្មីៗ':'Recent activity','មើលទាំងអស់':'See all','ព័ត៌មានលម្អិត':'Details',
+'សួស្តី':'Hello','អរុណសួស្តី':'Good morning','ទិវាសួស្តី':'Good afternoon',
+'សាយណ្ហសួស្តី':'Good evening','រាត្រីសួស្តី':'Good evening',
+/* — ផ្ទាំងដំបូង និងការចូលគណនី — */
+'សៀវភៅចំណូល-ចំណាយ':'Income & expense book','សម្រាប់គ្រប់គ្រងលុយកាក់ប្រចាំថ្ងៃ':'for managing your money every day',
+'កត់ត្រារហ័ស':'Log it fast','បញ្ចូលច្រើនមុខក្នុងម្តង ជាមួយម៉ាស៊ីនគិតលេខ':'Add several entries at once, with a calculator',
+'មើលឃើញច្បាស់':'See it clearly','ស្ថិតិ ថវិកា និងនិន្នាការប្រចាំខែ':'Stats, budget and monthly trends',
+'មានសុវត្ថិភាព':'Kept safe','រក្សាទុកលើ server និងប្រើ offline បាន':'Synced to the server, works offline',
+'ចាប់ផ្តើម':'Get started','ប្រើដោយមិនចូលគណនី':'Continue without an account',
+'សូមស្វាគមន៍':'Welcome','ចូល ឬបង្កើតគណនី ដើម្បីរក្សាទុកទិន្នន័យរបស់អ្នកឱ្យមានសុវត្ថិភាព':'Sign in or create an account to keep your data safe',
+'ចូលគណនី':'Sign in','បង្កើតគណនីថ្មី':'Create an account','ចូលដោយ Google':'Continue with Google',
+'ចូល / ចុះឈ្មោះគណនី':'Sign in / Sign up','ចូល':'Sign in','បង្កើតគណនី':'Create account',
+'ឬ':'or','អ៊ីមែល':'Email','ពាក្យសម្ងាត់':'Password','ពាក្យសម្ងាត់ថ្មី':'New password',
+'បញ្ជាក់ម្តងទៀត':'Confirm password','បញ្ចូលអ៊ីមែល និងពាក្យសម្ងាត់របស់អ្នក':'Enter your email and password',
+'ត្រូវការយ៉ាងតិច ៦ តួអក្សរ':'At least 6 characters','ត្រូវការយ៉ាងតិច ៦ តួអក្សរសម្រាប់ពាក្យសម្ងាត់':'Password must be at least 6 characters',
+'ភ្លេចពាក្យសម្ងាត់?':'Forgot password?','ស្តារពាក្យសម្ងាត់':'Reset password',
+'យើងនឹងផ្ញើតំណកំណត់ពាក្យសម្ងាត់ថ្មីទៅអ៊ីមែលរបស់អ្នក':'We will email you a link to set a new password',
+'ផ្ញើតំណស្តារ':'Send reset link','កំណត់ពាក្យសម្ងាត់ថ្មី':'Set a new password','រក្សាទុកពាក្យសម្ងាត់':'Save password',
+'← ត្រឡប់ក្រោយ':'← Back','← ត្រឡប់ទៅការចូល':'← Back to sign in','ត្រឡប់ក្រោយ':'Back',
+'អ្នកភ្ញៀវ':'Guest','ទិន្នន័យក្នុងម៉ាស៊ីន':'Stored on this device','ទិន្នន័យក្នុងម៉ាស៊ីន (Guest)':'Stored on this device (Guest)',
+/* — ប្រតិបត្តិការ — */
+'ចំណូល':'Income','ចំណាយ':'Expense','ផ្ទេរ':'Transfer','ផ្ទេរប្រាក់':'Transfer',
+'បន្ថែមចំណូល':'Add income','បន្ថែមចំណាយ':'Add expense','បន្ថែមប្រតិបត្តិការ':'Add transaction',
+'កែប្រតិបត្តិការ':'Edit transaction','ចំនួនទឹកប្រាក់':'Amount','ប្រភេទ':'Category',
+'កាលបរិច្ឆេទ':'Date','កំណត់ចំណាំ':'Note','ទីតាំង':'Location','ថ្ងៃនេះ':'Today','ម្សិលមិញ':'Yesterday',
+'ម៉ោង':'Time','ពី':'From','ទៅ':'To','រក្សាទុក':'Save','រក្សាទុកការកែ':'Save changes',
+'កែសម្រួល':'Edit','លុប':'Delete','លុបចោល':'Delete','បិទ':'Close','បោះបង់':'Cancel','បន្ថែម':'Add',
+'ទាំងអស់':'All','បញ្ជី':'List','ប្រតិទិន':'Calendar','មើលទាំងខែ':'Whole month','ជ្រើសថ្ងៃណាមួយ':'Pick a day',
+'ស្វែងរកតាមឈ្មោះ ឬកំណត់ចំណាំ':'Search by name or note','ស្វែងរកប្រតិបត្តិការ':'Search transactions',
+'０ ធាតុ':'0 items','០ ធាតុ':'0 items',
+'＋ បន្ថែមមុខទៀត (រក្សាទុករួមគ្នា)':'＋ Add another (save together)',
+'យកទីតាំងបច្ចុប្បន្ន':'Use current location','លុបខ្ទង់':'Delete digit',
+/* — កាបូប គោលដៅ បំណុល — */
+'កាបូបលុយ':'Money wallets','បន្ថែមកាបូប':'Add wallet','កែកាបូប':'Edit wallet','លុបកាបូបនេះ':'Delete this wallet',
+'ឈ្មោះ':'Name','បរិយាយខ្លី':'Short description','ពណ៌':'Colour','សមតុល្យដើម':'Opening balance',
+'មើលជាមុន':'Preview','កាបូបថ្មី':'New wallet','មើលកាបូបទាំងអស់':'Show all wallets',
+'គោលដៅសន្សំ':'Savings goals','គោលដៅ':'Goals','បន្ថែមគោលដៅ':'Add goal','កែគោលដៅ':'Edit goal',
+'លុបគោលដៅនេះ':'Delete this goal','សន្សំបានហើយ':'Saved so far','កំណត់ថ្ងៃ':'Target date',
+'បំណុល':'Debts','បំណុល-ឥណទាន':'Debts & credits','បន្ថែមបំណុល':'Add debt','កែបំណុល':'Edit debt',
+'លុបបំណុលនេះ':'Delete this debt','គេជំពាក់យើង':'Owed to me','យើងជំពាក់គេ':'I owe',
+'ត្រូវសងយើង':'owes me','យើងត្រូវសង':'I owe','កំណត់សង':'Due','បានសងរួច':'Settled','ចំនួន':'Amount',
+'សមតុល្យសរុប':'Total balance','សមតុល្យកាបូប':'Wallet balances','ចេញ':'Out',
+/* — ស្ថិតិ និងថវិកា — */
+'ចំណាយសរុប':'Total expense','ចំណូលសរុប':'Total income','សល់ក្នុងខែ':'Left this month',
+'ចំណាយកំពូល':'Top expenses','និន្នាការ ៦ ខែចុងក្រោយ':'Last 6 months','របាយការណ៍':'Report',
+'របាយការណ៍ប្រចាំខែ':'Monthly report','រូបភាពសម្រាប់ចែករំលែក':'A shareable image',
+'ចែករំលែក / រក្សាទុក':'Share / Save','ថវិកាប្រចាំខែ':'Monthly budget','មិនទាន់កំណត់':'Not set',
+'មិនទាន់កំណត់ថវិកា — ចុចដើម្បីកំណត់':'No budget set — tap to set one','កំណត់':'Set',
+'ខែមុន':'Previous month','ខែក្រោយ':'Next month','ជ្រើសកាលបរិច្ឆេទ':'Choose a date','ថ្ងៃទី':'Day',
+/* — ការកំណត់ — */
+'ការកំណត់ទូទៅ':'General','ទិន្នន័យ និងសុវត្ថិភាព':'Data & security','អំពី':'About',
+'គណនី':'Account','ផ្ទៃងងឹត':'Dark mode','ការពារភ្នែកពេលយប់':'Easier on the eyes at night',
+'ពណ៌កម្មវិធី':'App colour','គ្រប់គ្រងប្រភេទ':'Manage categories','ប្រតិបត្តិការដដែលៗ':'Recurring transactions',
+'បន្ថែមប្រតិបត្តិការដដែលៗ':'Add a recurring transaction','កែប្រតិបត្តិការដដែលៗ':'Edit recurring transaction',
+'រូបិយប័ណ្ណ':'Currency','រូបិយប័ណ្ណ និងអត្រាប្តូរប្រាក់':'Currency & exchange rate','បង្ហាញជា':'Show amounts in',
+'រៀល':'Riel','ដុល្លារ':'Dollar','រៀល ៛':'Riel ៛','ដុល្លារ $':'Dollar $','១ ដុល្លារ =':'1 dollar =',
+'អត្រាប្តូរប្រាក់':'Exchange rate','សមកាលកម្មឥឡូវនេះ':'Sync now','ទាញទិន្នន័យថ្មីពី server':'Fetch the latest from the server',
+'សោបើកកម្មវិធី':'App lock','លេខសម្ងាត់ ៦ ខ្ទង់':'6-digit PIN','បញ្ចូលលេខសម្ងាត់':'Enter your PIN',
+'នាំចេញជា CSV':'Export as CSV','បម្រុងទុកជា JSON':'Back up as JSON','ស្តារទិន្នន័យ (Restore)':'Restore data',
+'ទិន្នន័យទាំងអស់ក្នុងឯកសារតែមួយ':'Everything in a single file',
+'នាំចូលពីឯកសារ JSON ដែលធ្លាប់បម្រុងទុក':'Import from a JSON backup file',
+'ភាសា':'Language','ខ្មែរ':'ខ្មែរ','អំពីកម្មវិធី':'About this app','ចាកចេញ':'Sign out',
+'ប្តូរឈ្មោះបង្ហាញ':'Change display name','ប្តូររូបតំណាង':'Change photo','រូបតំណាង':'Profile photo',
+'ប្តូរផ្ទៃភ្លឺ-ងងឹត':'Toggle light / dark','ការជូនដំណឹង':'Notifications','ស្តង់ដារ':'Built-in',
+'ខៀវ':'Blue','ស្វាយ':'Violet','បៃតងសមុទ្រ':'Teal','បៃតង':'Emerald','ផ្កាកុលាប':'Rose',
+'ទឹកក្រូច':'Amber','ខៀវជ្រៅ':'Indigo','ផ្កាឈូក':'Pink','ប្រផេះ':'Slate',
+'ប្រចាំថ្ងៃ':'Daily','ប្រចាំសប្តាហ៍':'Weekly','ប្រចាំខែ':'Monthly','ញឹកញាប់':'Repeats',
+/* — ប្រភេទ (ដើម) — */
+'អាហារ':'Food','ដឹកជញ្ជូន':'Transport','ទិញឥវ៉ាន់':'Shopping','គេហដ្ឋាន':'Home',
+'វិក្កយបត្រ':'Bills','សុខភាព':'Health','អប់រំ':'Education','កម្សាន្ត':'Fun','ផ្សេងៗ':'Other',
+'ប្រាក់ខែ':'Salary','អាជីវកម្ម':'Business','អំណោយ':'Gift','ប្រាក់រង្វាន់':'Bonus',
+'ការវិនិយោគ':'Investment','ប្រាក់ទឹកតែ':'Tips','ការងារក្រៅម៉ោង':'Part time',
+'សាច់ប្រាក់':'Cash','កាបូបដៃ':'Pocket wallet',
+/* — ខែ និងថ្ងៃ — */
+'មករា':'January','កុម្ភៈ':'February','មីនា':'March','មេសា':'April','ឧសភា':'May','មិថុនា':'June',
+'កក្កដា':'July','សីហា':'August','កញ្ញា':'September','តុលា':'October','វិច្ឆិកា':'November','ធ្នូ':'December',
+'អាទិត្យ':'Sunday','ចន្ទ':'Monday','អង្គារ':'Tuesday','ពុធ':'Wednesday','ព្រហស្បតិ៍':'Thursday',
+'សុក្រ':'Friday','សៅរ៍':'Saturday',
+/* — សារ (toast / កំហុស) — */
+'បានរក្សាទុកកាបូប':'Wallet saved','បានលុបកាបូប':'Wallet deleted','បានរក្សាទុកគោលដៅ':'Goal saved',
+'បានលុបគោលដៅ':'Goal deleted','បានរក្សាទុកបំណុល':'Debt saved','បានលុបបំណុល':'Debt deleted',
+'បានលុបប្រតិបត្តិការ':'Transaction deleted','បានរក្សាទុកការកែ':'Changes saved','បានលុប':'Deleted',
+'បានរក្សាទុកប្រតិបត្តិការដដែលៗ':'Recurring transaction saved','បានធ្វើសមកាលកម្មរួចរាល់':'Sync complete',
+'បានបម្រុងទុកទិន្នន័យ':'Backup downloaded','បានស្តារទិន្នន័យរួចរាល់':'Restore complete',
+'បានប្តូររូបតំណាង':'Photo updated','បានប្តូរឈ្មោះបង្ហាញ':'Display name updated',
+'បានប្តូរពាក្យសម្ងាត់រួចរាល់':'Password changed','បានបើកសោកម្មវិធី':'App lock turned on',
+'បានបិទសោកម្មវិធី':'App lock turned off','បានកត់ត្រាទីតាំងបច្ចុប្បន្ន':'Current location saved',
+'បានដកកូអរដោនេចេញ':'Coordinates removed','ទីតាំងដែលបានកត់':'Saved location',
+'បានបន្ថែមទៅបញ្ជី — បញ្ចូលមុខបន្ទាប់':'Added to the list — enter the next one',
+'បានផ្ញើរួច — សូមពិនិត្យអ៊ីមែល (រួមទាំងថត Spam)':'Sent — check your email (including Spam)',
+'សូមបញ្ចូលចំនួនទឹកប្រាក់':'Please enter an amount','សូមបញ្ចូលចំនួនទឹកប្រាក់ជាមុនសិន':'Please enter an amount first',
+'សូមបញ្ចូលឈ្មោះកាបូប':'Please enter a wallet name',
+'សូមបញ្ចូលឈ្មោះ និងគោលដៅឱ្យបានត្រឹមត្រូវ':'Please enter a valid name and target',
+'សូមបញ្ចូលឈ្មោះ និងចំនួនប្រាក់ឱ្យបានត្រឹមត្រូវ':'Please enter a valid name and amount',
+'សូមបញ្ចូលអ៊ីមែល':'Please enter your email','អ៊ីមែលមិនត្រឹមត្រូវ':'That email is not valid',
+'អ៊ីមែល ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ':'Wrong email or password',
+'អ៊ីមែលនេះមានគណនីរួចហើយ — សូមចូលវិញ':'That email already has an account — please sign in',
+'ពាក្យសម្ងាត់ត្រូវការយ៉ាងតិច ៦ តួអក្សរ':'Password must be at least 6 characters',
+'ពាក្យសម្ងាត់ត្រូវយ៉ាងតិច ៦ តួ':'Password must be at least 6 characters',
+'ពាក្យសម្ងាត់ទាំងពីរមិនដូចគ្នាទេ':'The two passwords do not match',
+'សូមពិនិត្យអ៊ីមែលរបស់អ្នក ដើម្បីបញ្ជាក់គណនីជាមុនសិន':'Please check your email to confirm the account first',
+'សូមជ្រើសកាបូបពី និងទៅ ឱ្យខុសគ្នា':'Choose two different wallets','ការផ្ទេរត្រូវការកាបូបយ៉ាងតិច ២':'A transfer needs at least 2 wallets',
+'ការផ្ទេរមិនអាចបញ្ចូលច្រើនមុខទេ':'Transfers cannot be batched',
+'សូមបន្ថែមកាបូបលុយជាមុនសិន':'Please add a wallet first',
+'សូមបន្ថែមកាបូបលុយជាមុនសិន (ផ្ទាំង កាបូប)':'Please add a wallet first (Wallets tab)',
+'សូមជ្រើសឯកសាររូបភាព':'Please choose an image file','មិនអាចអានរូបភាពបានទេ':'That image could not be read',
+'រូបភាពធំពេក សូមសាកល្បងរូបផ្សេង':'That image is too large, try another',
+'ឧបករណ៍នេះមិនគាំទ្រទីតាំងទេ':'This device does not support location',
+'មិនអាចកំណត់ទីតាំងបានទេ':'Could not get your location',
+'សូមអនុញ្ញាតការចូលប្រើទីតាំងក្នុងកម្មវិធីរុករក':'Please allow location access in your browser',
+'អត្រាប្តូរប្រាក់ត្រូវធំជាងសូន្យ':'The exchange rate must be greater than zero',
+'មិនទាន់មានប្រតិបត្តិការសម្រាប់នាំចេញទេ':'There are no transactions to export yet',
+'ទម្រង់ឯកសារមិនត្រឹមត្រូវ':'That file format is not valid',
+'ឯកសារមិនត្រឹមត្រូវ — ត្រូវជាឯកសារ JSON ដែលបាននាំចេញពី Money Note':'Invalid file — it must be a JSON backup exported from Money Note',
+'លេខសម្ងាត់មិនត្រឹមត្រូវ':'Wrong PIN','លេខសម្ងាត់មិនដូចគ្នា — សូមព្យាយាមម្តងទៀត':'The PINs do not match — please try again',
+'កំណត់លេខសម្ងាត់ថ្មី (៦ ខ្ទង់)':'Set a new PIN (6 digits)','បញ្ចូលម្តងទៀត':'Enter it again',
+'បញ្ចូលលេខសម្ងាត់បច្ចុប្បន្ន ដើម្បីបិទសោ':'Enter your current PIN to turn the lock off',
+'របៀបអ្នកភ្ញៀវ — ទិន្នន័យរក្សាក្នុងម៉ាស៊ីនតែប៉ុណ្ណោះ':'Guest mode — data stays on this device only',
+'ទីតាំងមិនទាន់រក្សាទុកបានទេ — សូមបន្ថែមជួរ location':'Location was not saved — add a "location" column',
+'កំពុងចូល...':'Signing in...','កំពុងបង្កើត...':'Creating...','កំពុងផ្ញើ...':'Sending...',
+'កំពុងរក្សាទុក...':'Saving...','កំពុងទាញ...':'Fetching...','កំពុងកំណត់ទីតាំង...':'Getting your location...',
+'កំពុងបង្កើតរូបភាព...':'Building the image...','កំពុងស្តារទិន្នន័យ...':'Restoring...',
+'ចាកចេញពីគណនី? ទិន្នន័យក្នុងម៉ាស៊ីននឹងត្រូវលុប (នៅតែមានលើ server)':'Sign out? Data on this device will be cleared (it stays on the server)',
+'លុបកាបូបនេះ? ប្រតិបត្តិការចាស់ៗនៅតែរក្សាទុក':'Delete this wallet? Past transactions are kept',
+'លុបគោលដៅនេះ?':'Delete this goal?','លុបបំណុលនេះ?':'Delete this debt?',
+'លុបប្រតិបត្តិការដដែលៗនេះ?':'Delete this recurring transaction?',
+'ឈ្មោះបង្ហាញ៖':'Display name:','បង្កើតដោយ Money Note':'Made with Money Note',
+/* — គ្រប់គ្រងប្រភេទ — */
+'ប្រភេទថ្មី':'New category','កែប្រភេទ':'Edit category','+ បន្ថែមថ្មី':'+ Add new',
+'＋ បន្ថែមប្រភេទថ្មី':'＋ Add a new category','ផ្ទាល់ខ្លួន':'Custom','លាក់':'Hidden',
+'លាក់ប្រភេទនេះ':'Hide this category','បង្ហាញប្រភេទនេះវិញ':'Show this category again',
+'លុបប្រភេទនេះ':'Delete this category','បានបន្ថែមប្រភេទថ្មី':'Category added',
+'បានលុបប្រភេទ':'Category deleted','បានរក្សាទុក':'Saved',
+'បានលាក់ — ប្រតិបត្តិការចាស់នៅដដែល':'Hidden — past transactions are unchanged',
+'បានបង្ហាញវិញ':'Shown again','សូមបញ្ចូលឈ្មោះប្រភេទ':'Please enter a category name',
+'ប្រភេទនេះកំពុងប្រើក្នុងប្រតិបត្តិការខ្លះ។ លុបទេ? (ប្រតិបត្តិការចាស់នៅតែបង្ហាញឈ្មោះដដែល)':'This category is used by some transactions. Delete it? (Past transactions keep the name)',
+/* — កន្លែងទទេ — */
+'មិនទាន់មានប្រតិបត្តិការ':'No transactions yet','មិនទាន់មានបំណុលទេ':'No debts yet',
+'មិនទាន់មានគោលដៅទេ':'No goals yet','មិនទាន់មានកាបូបទេ':'No wallets yet','រកមិនឃើញ':'Nothing found',
+'ចុច ＋ ដើម្បីកត់ត្រាលើកដំបូង':'Tap ＋ to log your first one',
+'សាកល្បងពាក្យផ្សេង ឬដកចម្រោះចេញ':'Try another word, or clear the filter',
+'មិនទាន់មានទិន្នន័យសម្រាប់ខែនេះ':'No data for this month yet',
+'ថវិកាខែ {m}':'{m} budget',
+'កម្មវិធីនឹងផ្ទុកឡើងវិញដើម្បីប្តូរភាសា':'The app will reload to change language',
+'ភាសាខ្មែរ':'Khmer','ភាសាអង់គ្លេស':'English',
+'ទឹកប្រាក់ទាំងអស់រក្សាទុកជា':'All amounts are stored in',
+'ជាមូលដ្ឋាន។ ការប្តូរនេះប៉ះពាល់តែការបង្ហាញ':'as the base. This only affects display',
+'ឧ. ABA, Wing, សាច់ប្រាក់':'e.g. ABA, Wing, Cash','ឧ. កាបូបធនាគារ':'e.g. Bank wallet',
+'ឧ. កាហ្វេ':'e.g. Coffee','ឧ. កុំព្យូទ័រថ្មី':'e.g. New laptop','ឧ. ថ្លៃជួលផ្ទះ':'e.g. House rent',
+'ឧ. ធ្នូ ២០២៦':'e.g. December 2026','ឧ. បង ដារ៉ា':'e.g. Dara','ឧ. ផ្សារធំថ្មី':'e.g. Central Market',
+'ឧ. អាហារពេលល្ងាចជាមួយក្រុមការងារ':'e.g. Team dinner',
+/* — អត្ថបទមានតួរលេខជំនួស {…} — */
+'{n} ធាតុ':'{n} items','សរុប {a}':'Total {a}',
+'នៅសល់ {a} · {n} ថ្ងៃទៀត':'{a} left · {n} days to go',
+'លើសថវិកា {a} · {n} ថ្ងៃទៀត':'{a} over budget · {n} days to go',
+'ថវិកាប្រើអស់ {n}% ហើយ':'You have used {n}% of the budget',
+'នៅសល់ {a}':'{a} left','លើសថវិកា {a}':'{a} over budget','ចំនួន {a}':'Amount {a}',
+'កំណត់ថវិកា {a} សម្រាប់ខែនេះ':'Budget set to {a} for this month',
+'បានកត់ត្រា {a}':'Logged {a}','បានកត់ត្រា {n} មុខ · សរុប {a}':'Logged {n} entries · {a} total',
+'រក្សាទុកទាំង {n} មុខ':'Save all {n}','ផ្ទេរទៅ {w}':'Transfer to {w}',
+'បាននាំចេញ {n} ជួរ':'Exported {n} rows',
+'បានបញ្ចូលប្រតិបត្តិការដដែលៗ {n} ដងស្វ័យប្រវត្តិ':'Added {n} recurring entries automatically',
+'ទាំង {m}':'All of {m}','បង្ហាញជា {c} · ១$ = {r}៛':'Showing {c} · $1 = {r}៛',
+'≈ {a}៛  (១$ = {r}៛)':'≈ {a}៛  ($1 = {r}៛)',
+'នាំចូល {w} កាបូប, {t} ប្រតិបត្តិការ, {g} គោលដៅ, {d} បំណុល ពីឯកសារនេះ?':'Import {w} wallets, {t} transactions, {g} goals, {d} debts from this file?',
+/* — បំណែកខ្លីៗ — */
+'ហួសកំណត់':'overdue','បានសង':'paid','ធ្វើបច្ចុប្បន្នភាពចុងក្រោយ':'Last updated',
+'មិនទាន់មាននៅកំណែនេះទេ':'is not available in this version yet',
+'ទិន្នន័យបច្ចុប្បន្នរបស់អ្នកនឹងមិនត្រូវបានលុបចោលទេ (បន្ថែមចូលគ្នា)':'Your current data will not be deleted (they are merged in)'
+};
+
+/* ── បកប្រែ DOM ដោយស្វ័យប្រវត្តិ ──
+   ជំនួសអត្ថបទដែលត្រូវនឹងកូនសោក្នុងវចនានុក្រម។ MutationObserver ចាប់ខ្លឹមសារ
+   ដែល JS បង្កើតថ្មី (បញ្ជី សន្លឹក toast) ដូច្នេះមិនចាំបាច់ដាក់ t() គ្រប់កន្លែងទេ។
+   មិនចូលទៅក្នុង input ដែលអ្នកប្រើវាយ ឬឈ្មោះដែលអ្នកប្រើដាក់ខ្លួនឯង។ */
+let _trBusy=false;
+function trEl(el){
+  if(!el || el.nodeType!==1) return;
+  ['placeholder','aria-label','title'].forEach(a=>{
+    const v=el.getAttribute && el.getAttribute(a);
+    if(v && EN[v.trim()]) el.setAttribute(a, EN[v.trim()]);
+  });
+}
+function trDOM(root){
+  if(LANG!=='en' || !root) return;
+  _trBusy=true;
+  try{
+    if(root.nodeType===3){
+      const k=root.nodeValue.trim();
+      if(k && EN[k]) root.nodeValue=root.nodeValue.replace(k,EN[k]);
+    }else if(root.nodeType===1){
+      trEl(root);
+      root.querySelectorAll('[placeholder],[aria-label],[title]').forEach(trEl);
+      const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+      const jobs=[];
+      let n;
+      while((n=w.nextNode())){
+        const p=n.parentNode;
+        if(p && (p.tagName==='SCRIPT'||p.tagName==='STYLE')) continue;
+        const k=n.nodeValue.trim();
+        if(k && EN[k]) jobs.push([n, n.nodeValue.replace(k,EN[k])]);
+      }
+      jobs.forEach(([node,v])=>node.nodeValue=v);
+    }
+  }finally{ _trBusy=false; }
+}
+if(LANG==='en'){
+  document.addEventListener('DOMContentLoaded',()=>trDOM(document.body));
+  new MutationObserver(muts=>{
+    if(_trBusy) return;
+    muts.forEach(m=>{
+      m.addedNodes.forEach(trDOM);
+      if(m.type==='characterData') trDOM(m.target);
+    });
+  }).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
+}
+
+/* t()  — អត្ថបទថេរ · tf() — អត្ថបទមានតួរលេខជំនួស {a} {b} */
+function t(str){ return LANG==='en' ? (EN[str] || str) : str; }
+function tf(str, vals){
+  let out = t(str);
+  for(const k in vals) out = out.split('{'+k+'}').join(vals[k]);
+  return out;
+}
+
+const KH_M = ['មករា','កុម្ភៈ','មីនា','មេសា','ឧសភា','មិថុនា','កក្កដា','សីហា','កញ្ញា','តុលា','វិច្ឆិកា','ធ្នូ'].map(t);
+const KH_D = ['អាទិត្យ','ចន្ទ','អង្គារ','ពុធ','ព្រហស្បតិ៍','សុក្រ','សៅរ៍'].map(t);
+const KH_D_SHORT = LANG==='en' ? ['Su','Mo','Tu','We','Th','Fr','Sa'] : KH_D.map(d=>d.slice(0,2));
 function fmtDateVal(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 let TODAY = fmtDateVal(new Date());                                    // កាលបរិច្ឆេទបច្ចុប្បន្នពិត
 let VIEW  = {y:new Date().getFullYear(), m:new Date().getMonth()};     // ខែដើម (ត្រូវជាខែបច្ចុប្បន្នជានិច្ច)
@@ -1334,19 +1639,21 @@ function moneyNum(khr){
        : v.toLocaleString('en-US',{minimumFractionDigits:2, maximumFractionDigits:2});
 }
 const money = khr => moneyNum(khr)+curSym();
-const kh  = s=>String(s).replace(/[0-9]/g,d=>'០១២៣៤៥៦៧៨៩'[d]);
+const kh  = s=> LANG==='en' ? String(s) : String(s).replace(/[0-9]/g,d=>'០១២៣៤៥៦៧៨៩'[d]);
 const parse = d=>{const[y,m,dd]=d.split('-').map(Number); return new Date(y,m-1,dd);};
 const walOf = id=>state.wallets.find(w=>w.id===id)||{n:'—'};
 const inView = t=>{const d=parse(t.d); return d.getFullYear()===VIEW.y && d.getMonth()===VIEW.m;};
 const sumBy  = f=>state.txns.filter(f).reduce((s,t)=>s+t.a,0);
 
 function dayLabel(ds){
-  if(ds===TODAY) return 'ថ្ងៃនេះ';
+  if(ds===TODAY) return t('ថ្ងៃនេះ');
   const y=parse(TODAY); y.setDate(y.getDate()-1);
   const ymd=`${y.getFullYear()}-${String(y.getMonth()+1).padStart(2,'0')}-${String(y.getDate()).padStart(2,'0')}`;
-  if(ds===ymd) return 'ម្សិលមិញ';
+  if(ds===ymd) return t('ម្សិលមិញ');
   const d=parse(ds);
-  return `ថ្ងៃ${KH_D[d.getDay()]} ${kh(String(d.getDate()).padStart(2,'0'))} ${KH_M[d.getMonth()]}`;
+  return LANG==='en'
+    ? `${KH_D[d.getDay()]} ${d.getDate()} ${KH_M[d.getMonth()]}`
+    : `ថ្ងៃ${KH_D[d.getDay()]} ${kh(String(d.getDate()).padStart(2,'0'))} ${KH_M[d.getMonth()]}`;
 }
 function walBalance(id){
   const w=walOf(id); let b=w.open||0;
@@ -1411,6 +1718,103 @@ function renderAccents(){
   });
 }
 $('#rowAccent').onclick=()=>{ renderAccents(); showSheet('#shAccent'); };
+
+/* ═══ គ្រប់គ្រងប្រភេទ ═══ */
+let catTab='expense', ceEditing=null, ceColor=CAT_COLORS[0], ceIcon=CAT_ICONS[0];
+function catUsed(id){ return state.txns.some(x=>x.cat===id); }
+function renderCatList(){
+  $$('#catTypeSeg button').forEach(b=>b.classList.toggle('on', b.dataset.t===catTab));
+  const rows=BUILTIN[catTab].map(c=>({...c, builtin:true, off:catStore.hide.includes(c.id)}))
+    .concat((catStore.add[catTab]||[]).map(c=>({...c, builtin:false, off:false})));
+  $('#catList').innerHTML=rows.map(c=>`
+    <button class="catrow${c.off?' off':''}" data-id="${c.id}">
+      <span class="ci2" style="background:${c.c}"><svg width="18" height="18" aria-hidden="true"><use href="#${c.i}"></use></svg></span>
+      <b>${c.n}</b>
+      <small>${t(c.builtin? (c.off?'លាក់':'ស្តង់ដារ') : 'ផ្ទាល់ខ្លួន')}</small>
+      <svg width="15" height="15" style="color:var(--soft)" aria-hidden="true"><use href="#c-chev"></use></svg>
+    </button>`).join('');
+  $$('#catList .catrow').forEach(b=>b.onclick=()=>openCatEdit(b.dataset.id));
+}
+$$('#catTypeSeg button').forEach(b=>b.onclick=()=>{ catTab=b.dataset.t; renderCatList(); });
+$('#rowCats').onclick=()=>{ catTab='expense'; renderCatList(); showSheet('#shCats'); };
+
+function paintCePickers(){
+  $('#ceColors').innerHTML=CAT_COLORS.map(c=>
+    `<button class="swatch${c===ceColor?' on':''}" data-c="${c}" style="background:${c}"></button>`).join('');
+  $$('#ceColors .swatch').forEach(b=>b.onclick=()=>{ ceColor=b.dataset.c; paintCePickers(); });
+  $('#ceIcons').innerHTML=CAT_ICONS.map(i=>
+    `<button class="${i===ceIcon?'on':''}" data-i="${i}"><svg width="18" height="18" aria-hidden="true"><use href="#${i}"></use></svg></button>`).join('');
+  $$('#ceIcons button').forEach(b=>b.onclick=()=>{ ceIcon=b.dataset.i; paintCePickers(); });
+}
+function openCatEdit(id){
+  const c = id ? allCatOf(catTab,id) : null;
+  ceEditing = id || null;
+  ceColor = c? c.c : CAT_COLORS[0];
+  ceIcon  = c? c.i : CAT_ICONS[0];
+  $('#ceName').value = c? c.n : '';
+  $('#ceTitle').textContent = c? 'កែប្រភេទ' : 'ប្រភេទថ្មី';
+  const builtin = !!(c && BUILTIN[catTab].some(x=>x.id===id));
+  // ប្រភេទដើមកែមិនបាន — លាក់វិញ ដើម្បីកុំឱ្យប្រតិបត្តិការចាស់បាត់ឈ្មោះ
+  $('#ceName').disabled = builtin;
+  $$('#ceColors .swatch').forEach(b=>b.disabled=builtin);
+  $$('#ceIcons button').forEach(b=>b.disabled=builtin);
+  const del=$('#ceDel');
+  if(!c){ del.style.display='none'; }
+  else{
+    del.style.display='block';
+    del.textContent = builtin
+      ? (catStore.hide.includes(id) ? 'បង្ហាញប្រភេទនេះវិញ' : 'លាក់ប្រភេទនេះ')
+      : 'លុបប្រភេទនេះ';
+  }
+  paintCePickers();
+  hideSheet(); setTimeout(()=>showSheet('#shCatEdit'),240);
+}
+function backToCats(){ hideSheet(); setTimeout(()=>{ renderCatList(); showSheet('#shCats'); },240); }
+$('#catAdd').onclick=()=>openCatEdit(null);
+$('#ceSave').onclick=()=>{
+  const nm=$('#ceName').value.trim();
+  const builtin = ceEditing && BUILTIN[catTab].some(x=>x.id===ceEditing);
+  if(builtin){ backToCats(); return; }
+  if(!nm){ toast('សូមបញ្ចូលឈ្មោះប្រភេទ'); return; }
+  const arr=catStore.add[catTab];
+  if(ceEditing){
+    const c=arr.find(x=>x.id===ceEditing);
+    if(c) Object.assign(c,{n:nm, c:ceColor, i:ceIcon});
+  }else{
+    arr.push({id:'u'+Date.now().toString(36), n:nm, c:ceColor, i:ceIcon});
+  }
+  catsSave(); rebuildCats(); refresh(); buzz(10);
+  toast(ceEditing? 'បានរក្សាទុក' : 'បានបន្ថែមប្រភេទថ្មី');
+  backToCats();
+};
+$('#ceDel').onclick=()=>{
+  const id=ceEditing; if(!id) return;
+  const builtin = BUILTIN[catTab].some(x=>x.id===id);
+  if(builtin){
+    const i=catStore.hide.indexOf(id);
+    if(i>=0) catStore.hide.splice(i,1); else catStore.hide.push(id);
+    toast(i>=0? 'បានបង្ហាញវិញ' : 'បានលាក់ — ប្រតិបត្តិការចាស់នៅដដែល');
+  }else{
+    if(catUsed(id) && !confirm(t('ប្រភេទនេះកំពុងប្រើក្នុងប្រតិបត្តិការខ្លះ។ លុបទេ? (ប្រតិបត្តិការចាស់នៅតែបង្ហាញឈ្មោះដដែល)'))) return;
+    catStore.add[catTab]=catStore.add[catTab].filter(c=>c.id!==id);
+    toast('បានលុបប្រភេទ');
+  }
+  catsSave(); rebuildCats(); refresh(); buzz(12);
+  backToCats();
+};
+
+/* ═══ ភាសា ═══ */
+$('#sLang').textContent = LANG==='en' ? 'English' : 'ខ្មែរ';
+$('#rowLang').onclick=()=>{
+  $$('#shLang .langopt').forEach(b=>b.classList.toggle('on', b.dataset.l===LANG));
+  showSheet('#shLang');
+};
+$$('#shLang .langopt').forEach(b=>b.onclick=()=>{
+  const l=b.dataset.l;
+  if(l===LANG){ hideSheet(); return; }
+  try{ localStorage.setItem('mn_lang',l); }catch(e){}
+  location.reload();   // ផ្ទុកឡើងវិញ — ធានាថាគ្រប់អេក្រង់ត្រូវគ្នាទាំងអស់
+});
 
 function setTheme(t){
   state.theme=t;
@@ -1935,7 +2339,7 @@ async function applyRecurring(){
     }
     await markRecurringApplied(tpl.id, occurrences[occurrences.length-1]);
   }
-  if(count) toast(`បានបញ្ចូលប្រតិបត្តិការដដែលៗ ${kh(count)} ដងស្វ័យប្រវត្តិ`);
+  if(count) toast(tf('បានបញ្ចូលប្រតិបត្តិការដដែលៗ {n} ដងស្វ័យប្រវត្តិ',{n:kh(count)}));
 }
 // dueOccurrences(tpl): គណនាថ្ងៃដែលត្រូវអនុវត្ត ចាប់ពី lastApplied (ឬ startDate) រហូតដល់ TODAY (កំណត់ ១២ ដងក្នុងការហៅម្តង)
 function dueOccurrences(tpl){
@@ -1991,10 +2395,11 @@ function renderBudget(animate){
   }else{
     $('#bBn').innerHTML=`${moneyNum(exp)} <i>/ ${money(state.budget)}</i>`;
     $('#bLeft').textContent = left>=0
-      ? `នៅសល់ ${money(left)} · ${kh(daysLeft)} ថ្ងៃទៀត`
-      : `លើសថវិកា ${money(-left)} · ${kh(daysLeft)} ថ្ងៃទៀត`;
+      ? tf('នៅសល់ {a} · {n} ថ្ងៃទៀត',{a:money(left),n:kh(daysLeft)})
+      : tf('លើសថវិកា {a} · {n} ថ្ងៃទៀត',{a:money(-left),n:kh(daysLeft)});
   }
-  $('#sBudget').textContent=state.budget? money(state.budget) : 'មិនទាន់កំណត់';
+  $('#sBudget').textContent=state.budget? money(state.budget) : t('មិនទាន់កំណត់');
+  $('#budLbl').textContent = tf('ថវិកាខែ {m}',{m:KH_M[VIEW.m]});
   const C=213.6, arc=$('#arc'), lbl=$('#pct');
   arc.setAttribute('stroke', (state.budget&&left<0)?'var(--expense)':'var(--brand)');
   if(!animate){ arc.setAttribute('stroke-dashoffset', C-C*pct/100); lbl.textContent=Math.round(pct)+'%'; return; }
@@ -2091,7 +2496,7 @@ function renderAll(){
     .filter(t=>!q || t.n.toLowerCase().includes(q) || catOf(t.t,t.cat).n.includes(q)
                   || (t.loc||'').toLowerCase().includes(q))
     .sort(byDate);
-  $('#allCount').textContent=`${kh(rows.length)} ធាតុ`;
+  $('#allCount').textContent=tf('{n} ធាតុ',{n:kh(rows.length)});
   renderWalBanner();
   const box=$('#alllist');
   if(!rows.length){
@@ -2134,7 +2539,7 @@ function renderCalView(){
     if(t.t==='expense') byDay[k].e+=t.a;
   });
 
-  let html=KH_D.map(d=>`<span class="wd">${d.slice(0,2)}</span>`).join('');
+  let html=KH_D_SHORT.map(d=>`<span class="wd">${d}</span>`).join('');
   for(let i=0;i<first;i++) html+='<span class="cday blank"></span>';
   for(let d=1;d<=days;d++){
     const ds=`${cvY}-${String(cvM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
@@ -2150,7 +2555,7 @@ function renderCalView(){
     state.day = state.day===b.dataset.d ? null : b.dataset.d;
     renderCalView(); renderAll(); buzz(5);
   });
-  $('#cvDayLbl').textContent = state.day ? dayLabel(state.day) : `ទាំង${KH_M[cvM]}`;
+  $('#cvDayLbl').textContent = state.day ? dayLabel(state.day) : tf('ទាំង {m}',{m:KH_M[cvM]});
 }
 function setAllMode(m){
   allMode=m;
@@ -2252,7 +2657,7 @@ $('#statsNext').onclick=()=>{ statsView=shiftView(statsView,1); renderStats(); }
 /* ═══════════ ៨. កាបូប · គោលដៅ · បំណុល ═══════════ */
 function renderWallets(){
   const total=state.wallets.reduce((s,w)=>s+walBalance(w.id),0);
-  $('#wTotal').textContent=`សរុប ${money(total)}`;
+  $('#wTotal').textContent=tf('សរុប {a}',{a:money(total)});
   $('#wlist').innerHTML=state.wallets.length ? state.wallets.map(w=>{
     const f=walFlow(w.id);
     return `<button class="wrow" data-w="${w.id}">
@@ -2282,7 +2687,7 @@ function renderWallets(){
     return `<button class="wrow" data-d="${d.id}" style="opacity:${d.paid?.55:1}">
       <span class="wdot" style="background:${inn?'var(--income)':'var(--expense)'}">
         <svg width="19" height="19" aria-hidden="true"><use href="#c-hand"></use></svg></span>
-      <span class="mid"><b>${d.n}${d.paid?' ✓':''}</b><small>${inn?'គេជំពាក់យើង':'យើងជំពាក់គេ'} · កំណត់ ${khDateShort(d.due)}${d.paid?' · បានសង':''}</small></span>
+      <span class="mid"><b>${d.n}${d.paid?' ✓':''}</b><small>${t(inn?'គេជំពាក់យើង':'យើងជំពាក់គេ')} · ${t('កំណត់សង')} ${khDateShort(d.due)}${d.paid?' · '+t('បានសង'):''}</small></span>
       <span class="amt ${inn?'up':'down'}">${inn?'+':'−'}${moneyNum(d.a)}</span>
     </button>`;
   }).join('') : `<div class="hint">មិនទាន់មានបំណុលទេ</div>`;
@@ -2296,7 +2701,8 @@ function khDateShort(iso){
   if(!iso) return '—';
   const d=parse(iso);
   if(isNaN(d)) return iso;
-  return `${kh(String(d.getDate()).padStart(2,'0'))} ${KH_M[d.getMonth()]}`;
+  return LANG==='en' ? `${d.getDate()} ${KH_M[d.getMonth()]}`
+                     : `${kh(String(d.getDate()).padStart(2,'0'))} ${KH_M[d.getMonth()]}`;
 }
 function renderNoti(){
   const rows=[];
@@ -2309,16 +2715,16 @@ function renderNoti(){
     const over=diff<0;
     rows.push({
       color: over?'var(--expense)':'var(--brand)', icon:'c-hand',
-      title:`${d.n} ${d.dir==='in'?'ត្រូវសងយើង':'យើងត្រូវសង'} ${khDateShort(d.due)}${over?' (ហួសកំណត់)':''}`,
-      sub:`ចំនួន ${money(d.a)}`,
+      title:`${d.n} ${t(d.dir==='in'?'ត្រូវសងយើង':'យើងត្រូវសង')} ${khDateShort(d.due)}${over?' ('+t('ហួសកំណត់')+')':''}`,
+      sub:tf('ចំនួន {a}',{a:money(d.a)}),
     });
   });
   if(state.budget>0){
     const exp=computeMonthTotals(VIEW).exp;
     const pct=Math.round(exp/state.budget*100);
     if(pct>=80){
-      rows.push({color:'var(--expense)', icon:'c-target', title:`ថវិកាប្រើអស់ ${kh(pct)}% ហើយ`,
-        sub: exp>state.budget ? `លើសថវិកា ${money(exp-state.budget)}` : `នៅសល់ ${money(state.budget-exp)}`});
+      rows.push({color:'var(--expense)', icon:'c-target', title:tf('ថវិកាប្រើអស់ {n}% ហើយ',{n:kh(pct)}),
+        sub: exp>state.budget ? tf('លើសថវិកា {a}',{a:money(exp-state.budget)}) : tf('នៅសល់ {a}',{a:money(state.budget-exp)})});
     }
   }
   $('#notiPanel').innerHTML = rows.length ? rows.map(r=>`
@@ -2690,7 +3096,7 @@ $('#bNoti').onclick=()=>{ renderNoti(); showSheet('#shNoti'); };
 
 /* ── រូបិយប័ណ្ណ និងអត្រាប្តូរប្រាក់ ── */
 function updateRateSub(){
-  $('#sRateSub').textContent = `បង្ហាញជា ${state.display==='USD'?'ដុល្លារ':'រៀល'} · ១$ = ${fmt(state.rate)}៛`;
+  $('#sRateSub').textContent = tf('បង្ហាញជា {c} · ១$ = {r}៛',{c:t(state.display==='USD'?'ដុល្លារ':'រៀល'),r:fmt(state.rate)});
 }
 $('#rowRate').onclick=()=>{
   $('#rateIn').value=state.rate;
@@ -2707,7 +3113,7 @@ $('#rateSave').onclick=()=>{
   state.display=$('#dispPick .pk.on').dataset.d;
   try{ localStorage.setItem('mn_rate',String(r)); localStorage.setItem('mn_display',state.display); }catch(e){}
   hideSheet(); updateRateSub(); refresh();
-  toast(`បង្ហាញជា${state.display==='USD'?'ដុល្លារ':'រៀល'} · ១$ = ${fmt(r)}៛`);
+  toast(tf('បង្ហាញជា {c} · ១$ = {r}៛',{c:t(state.display==='USD'?'ដុល្លារ':'រៀល'),r:fmt(r)}));
 };
 
 /* ── សមកាលកម្មដោយដៃ ── */
@@ -2717,12 +3123,12 @@ $('#rowSync').onclick=async()=>{
   await fetchAll();
   refresh();
   const now=new Date();
-  $('#syncSub').textContent='ធ្វើបច្ចុប្បន្នភាពចុងក្រោយ '+kh(String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'));
+  $('#syncSub').textContent=t('ធ្វើបច្ចុប្បន្នភាពចុងក្រោយ')+' '+kh(String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'));
   toast('បានធ្វើសមកាលកម្មរួចរាល់');
 };
 
 /* ── ជួរដែលមុខងារមិនទាន់រួចរាល់ ── */
-$$('[data-soon]').forEach(b=>b.onclick=()=>toast(b.dataset.soon+' — មិនទាន់មាននៅកំណែនេះទេ'));
+$$('[data-soon]').forEach(b=>b.onclick=()=>toast(t(b.dataset.soon)+' — '+t('មិនទាន់មាននៅកំណែនេះទេ')));
 
 /* ── ថវិកា ── */
 $('#bBudget').onclick=$('[data-go="budget"]').onclick=()=>{
@@ -2734,7 +3140,7 @@ $('#budSave').onclick=async()=>{
   hideSheet();
   await setBudget(v);
   renderBudget(true); renderStats();
-  toast(`កំណត់ថវិកា ${money(v)} សម្រាប់ខែនេះ`);
+  toast(tf('កំណត់ថវិកា {a} សម្រាប់ខែនេះ',{a:money(v)}));
 };
 
 /* ═══════════ ១២. បន្ថែម / កែ ប្រតិបត្តិការ ═══════════ */
@@ -2769,7 +3175,7 @@ function drawAmt(){
   el.innerHTML=`${showing}<i>${draft.cur==='USD'?'$':'៛'}</i>`;
   const khr=draftKHR();
   $('#amtConv').textContent = draft.cur==='USD'
-    ? (khr? `≈ ${fmt(khr)}៛  (១$ = ${fmt(state.rate)}៛)` : '')
+    ? (khr? tf('≈ {a}៛  (១$ = {r}៛)',{a:fmt(khr),r:fmt(state.rate)}) : '')
     : (khr? `≈ ${(khr/state.rate).toFixed(2)}$` : '');
 }
 // setCur(): ប្តូររូបិយប័ណ្ណបញ្ចូល — គ្រាប់ "000" ក្លាយជា "." ពេលបញ្ចូលជាដុល្លារ
@@ -2790,7 +3196,7 @@ function renderBatch(){
       <button data-i="${i}" aria-label="ដកចេញ">✕</button></span>`).join('');
   $$('#batchList button').forEach(b=>b.onclick=()=>{ batch.splice(+b.dataset.i,1); renderBatch(); });
   $('#saveBtn').textContent = batch.length
-    ? `រក្សាទុកទាំង ${kh(batch.length+1)} មុខ`
+    ? tf('រក្សាទុកទាំង {n} មុខ',{n:kh(batch.length+1)})
     : (draft.editing? 'រក្សាទុកការកែ':'រក្សាទុក');
 }
 $('#addMore').onclick=()=>{
@@ -2923,7 +3329,7 @@ $('#saveBtn').onclick=async()=>{
   if(draft.type==='transfer' && draft.wal===draft.wal2){ toast('សូមជ្រើសកាបូបពី និងទៅ ឱ្យខុសគ្នា'); return; }
   const loc  = buildLoc($('#locIn').value, draft.lat, draft.lng);
   const name = $('#noteIn').value.trim() ||
-    (draft.type==='transfer' ? `ផ្ទេរទៅ ${walOf(draft.wal2).n}` : catOf(draft.type,draft.cat).n);
+    (draft.type==='transfer' ? tf('ផ្ទេរទៅ {w}',{w:walOf(draft.wal2).n}) : catOf(draft.type,draft.cat).n);
   if(draft.editing){
     const t=state.txns.find(x=>x.id===draft.editing);
     Object.assign(t,{t:draft.type, cat:draft.type==='transfer'?null:draft.cat, n:name, a, loc,
@@ -2940,8 +3346,8 @@ $('#saveBtn').onclick=async()=>{
     let sum=0;
     for(const it of pending){ await addTxn({...it, tm}); sum+=it.a; }
     toast(pending.length>1
-      ? `បានកត់ត្រា ${kh(pending.length)} មុខ · សរុប ${money(sum)}`
-      : `បានកត់ត្រា ${money(sum)}`);
+      ? tf('បានកត់ត្រា {n} មុខ · សរុប {a}',{n:kh(pending.length),a:money(sum)})
+      : tf('បានកត់ត្រា {a}',{a:money(sum)}));
   }
 };
 
@@ -2960,7 +3366,9 @@ function openDetail(id){
     <div class="panel" style="margin:0 0 var(--sp4); padding:var(--sp2) 0">
       <div class="kv"><span>ប្រភេទ</span><b>${c.n}</b></div>
       <div class="kv"><span>កាបូប</span><b>${t.t==='transfer'?`${walOf(t.w).n} → ${walOf(t.w2).n}`:walOf(t.w).n}</b></div>
-      <div class="kv"><span>កាលបរិច្ឆេទ</span><b>ថ្ងៃ${KH_D[d.getDay()]} ${kh(String(d.getDate()).padStart(2,'0'))} ${KH_M[d.getMonth()]} ${kh(d.getFullYear())}</b></div>
+      <div class="kv"><span>កាលបរិច្ឆេទ</span><b>${LANG==='en'
+        ? `${KH_D[d.getDay()]} ${d.getDate()} ${KH_M[d.getMonth()]} ${d.getFullYear()}`
+        : `ថ្ងៃ${KH_D[d.getDay()]} ${kh(String(d.getDate()).padStart(2,'0'))} ${KH_M[d.getMonth()]} ${kh(d.getFullYear())}`}</b></div>
       <div class="kv"><span>ម៉ោង</span><b class="num">${kh(t.tm)}</b></div>
       ${t.loc? `<div class="kv"><span>ទីតាំង</span>${
         parseLoc(t.loc).lat
@@ -2992,7 +3400,7 @@ function drawCal(){
   $('#calTitle').textContent=`${KH_M[calM]} ${kh(calY)}`;
   const first=new Date(calY,calM,1).getDay();
   const days=new Date(calY,calM+1,0).getDate();
-  let html=KH_D.map(d=>`<span class="wd">${d.slice(0,2)}</span>`).join('');
+  let html=KH_D_SHORT.map(d=>`<span class="wd">${d}</span>`).join('');
   for(let i=0;i<first;i++) html+='<span></span>';
   for(let d=1;d<=days;d++){
     const ds=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
@@ -3023,7 +3431,7 @@ function exportCSV(){
   a.href=url; a.download=`money-note-${TODAY}.csv`;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(()=>URL.revokeObjectURL(url), 4000);
-  toast(`បាននាំចេញ ${kh(state.txns.length)} ជួរ`);
+  toast(tf('បាននាំចេញ {n} ជួរ',{n:kh(state.txns.length)}));
 }
 $('#bExport').onclick=exportCSV;
 
@@ -3054,7 +3462,7 @@ async function restoreFromJSON(file){
     toast('ទម្រង់ឯកសារមិនត្រឹមត្រូវ'); return;
   }
   const nW=data.wallets.length, nT=(data.txns||[]).length, nG=(data.goals||[]).length, nD=(data.debts||[]).length;
-  if(!confirm(`នាំចូល ${kh(nW)} កាបូប, ${kh(nT)} ប្រតិបត្តិការ, ${kh(nG)} គោលដៅ, ${kh(nD)} បំណុល ពីឯកសារនេះ?\nទិន្នន័យបច្ចុប្បន្នរបស់អ្នកនឹងមិនត្រូវបានលុបចោលទេ (បន្ថែមចូលគ្នា)`)) return;
+  if(!confirm(tf('នាំចូល {w} កាបូប, {t} ប្រតិបត្តិការ, {g} គោលដៅ, {d} បំណុល ពីឯកសារនេះ?',{w:kh(nW),t:kh(nT),g:kh(nG),d:kh(nD)})+'\n'+t('ទិន្នន័យបច្ចុប្បន្នរបស់អ្នកនឹងមិនត្រូវបានលុបចោលទេ (បន្ថែមចូលគ្នា)'))) return;
 
   toast('កំពុងស្តារទិន្នន័យ...');
   const walletIdMap={};
@@ -3182,7 +3590,7 @@ $('#deck').addEventListener('scroll',()=>{
 /* ═══════════ ១៧. ចាប់ផ្តើម ═══════════ */
 function refresh(){
   renderDeck(); renderBudget(false); renderRecent(); renderNoti();
-  $('#sRecur').textContent=`${kh(state.recurring.length)} ធាតុ`;
+  $('#sRecur').textContent=tf('{n} ធាតុ',{n:kh(state.recurring.length)});
   if(state.screen==='stats')  renderStats();
   if(state.screen==='wallet') renderWallets();
   if(state.screen==='all')  { renderAll(); if(allMode==='cal') renderCalView(); }
