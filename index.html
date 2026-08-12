@@ -581,6 +581,30 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
 .wedit{width:30px; height:30px; flex:0 0 30px; border-radius:10px; margin-left:var(--sp2);
   background:var(--sink); color:var(--soft); display:flex; align-items:center; justify-content:center;}
 
+/* ── រូបភាពវិក្កយបត្រ ── */
+.photobox{flex:1; min-width:0; display:flex; flex-wrap:wrap; align-items:center; gap:var(--sp2);}
+.photobtn{display:inline-flex; align-items:center; gap:6px; border:none; cursor:pointer;
+  background:var(--sink); color:var(--ink); border-radius:12px; padding:9px 13px;
+  font-size:12.5px; font-family:var(--khmer); transition:transform .18s var(--spring);}
+.photobtn:active{transform:scale(.94);}
+.photoprev{position:relative; flex:0 0 auto;}
+.photoprev img{width:56px; height:56px; border-radius:13px; object-fit:cover; display:block;
+  box-shadow:var(--shadow);}
+.photox{position:absolute; top:-7px; right:-7px; width:22px; height:22px; border-radius:50%;
+  border:none; cursor:pointer; background:var(--expense); color:#fff; font-size:11px; line-height:1;
+  display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,.35);}
+.txshot{width:38px; height:38px; flex:0 0 38px; border-radius:11px; object-fit:cover;
+  margin-left:var(--sp2); box-shadow:var(--shadow);}
+.dshot{width:100%; max-height:280px; object-fit:contain; border-radius:var(--r-md);
+  margin-bottom:var(--sp4); background:var(--sink); cursor:zoom-in; display:block;}
+.lightbox{position:fixed; inset:0; z-index:120; background:rgba(12,17,26,.94);
+  display:none; align-items:center; justify-content:center; padding:var(--sp5);}
+.lightbox.on{display:flex; animation:pop .25s var(--spring) both;}
+.lightbox img{max-width:100%; max-height:100%; border-radius:var(--r-md);}
+.lightbox .lbx{position:absolute; top:calc(16px + env(safe-area-inset-top,0px)); right:18px;
+  width:40px; height:40px; border-radius:14px; border:none; cursor:pointer;
+  background:rgba(255,255,255,.18); color:#fff; display:flex; align-items:center; justify-content:center;}
+
 /* ── ទីតាំង ── */
 .locrow{display:flex; align-items:center; gap:var(--sp2); flex:1; min-width:0;}
 .locrow input{flex:1; min-width:0;}
@@ -694,6 +718,8 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
 <symbol id="c-investment" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19h16"/><path d="m5 15 4.5-5 3.5 3.5L19 6"/><path d="M15 6h4v4"/></symbol>
 <symbol id="c-tip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 4v16"/><path d="M15.5 7.5A3 3 0 0 0 12.8 6h-1.4a2.6 2.6 0 0 0-.4 5.2l2 .3a2.6 2.6 0 0 1-.4 5.2h-1.4a3 3 0 0 1-2.7-1.5"/></symbol>
 <symbol id="c-parttime" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 1.8"/></symbol>
+<symbol id="c-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="3.4"/></symbol>
+<symbol id="c-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m4 17 4.5-4.5 3 3L15 12l5 5"/></symbol>
 <symbol id="c-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
 <symbol id="c-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/></symbol>
 <symbol id="c-exchange" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 8h13l-3-3M20 16H7l3 3"/></symbol>
@@ -1092,10 +1118,24 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
     <div class="frow"><label>ពី</label><div class="pick" id="frWal"></div></div>
     <div class="frow"><label>ទៅ</label><div class="pick" id="toWal"></div></div>
   </div>
-  <div class="frow" id="walRow"><label>កាបូប</label><div class="pick" id="walPick"></div></div>
+  <div class="frow" id="walRow"><label>កាបូបប្រើ</label><div class="pick" id="walPick"></div></div>
   <div class="frow"><label>កាលបរិច្ឆេទ</label>
     <div class="pick"><button class="pk on" id="dateBtn"></button></div></div>
-  <div class="frow"><label for="locIn">ទីតាំង</label>
+  <div class="frow" style="align-items:flex-start"><label style="padding-top:10px">រូបភាព</label>
+    <div class="photobox">
+      <button class="photobtn" id="photoCam" type="button">
+        <svg width="17" height="17" aria-hidden="true"><use href="#c-camera"></use></svg>ថត</button>
+      <button class="photobtn" id="photoPick" type="button">
+        <svg width="17" height="17" aria-hidden="true"><use href="#c-image"></use></svg>ជ្រើសរូប</button>
+      <div class="photoprev" id="photoPrev" style="display:none">
+        <img id="photoImg" alt="រូបភាពវិក្កយបត្រ">
+        <button class="photox" id="photoDel" type="button" aria-label="ដករូបចេញ">✕</button>
+      </div>
+    </div>
+    <input type="file" id="photoFile" accept="image/*" hidden>
+    <input type="file" id="photoFileCam" accept="image/*" capture="environment" hidden>
+  </div>
+  <div class="frow" style="align-items:flex-start"><label for="locIn" style="padding-top:10px">ទីតាំង</label>
     <div class="locrow">
       <input id="locIn" placeholder="ឧ. ផ្សារធំថ្មី" maxlength="60">
       <button class="pinbtn" id="locBtn" type="button" aria-label="យកទីតាំងបច្ចុប្បន្ន"><svg width="18" height="18" aria-hidden="true"><use href="#c-pin"></use></svg></button>
@@ -1219,7 +1259,7 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
     <div class="catgrid" id="recurCatGrid"></div>
   </div>
   <div class="frow"><label>ចំនួន</label><input id="recurAmt" type="number" inputmode="numeric" step="1000"><span style="color:var(--soft);font-size:13px">៛</span></div>
-  <div class="frow"><label>កាបូប</label><div class="pick" id="recurWalPick"></div></div>
+  <div class="frow"><label>កាបូបប្រើ</label><div class="pick" id="recurWalPick"></div></div>
   <div class="frow"><label>ញឹកញាប់</label>
     <div class="pick">
       <button class="pk on" data-f="monthly">ប្រចាំខែ</button>
@@ -1300,6 +1340,11 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
     ទឹកប្រាក់ទាំងអស់រក្សាទុកជា <b>រៀល</b> ជាមូលដ្ឋាន។ ការប្តូរនេះប៉ះពាល់តែការបង្ហាញ
     និងការបញ្ចូលប៉ុណ្ណោះ — អត្រាត្រូវរក្សាទុកក្នុងឧបករណ៍នេះ។</p>
   <button class="save" id="rateSave">រក្សាទុក</button>
+</div>
+
+<div class="lightbox" id="lightbox">
+  <button class="lbx" id="lbClose" aria-label="បិទ"><svg width="18" height="18" aria-hidden="true"><use href="#c-x"></use></svg></button>
+  <img id="lbImg" alt="រូបភាពវិក្កយបត្រ">
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -1473,6 +1518,10 @@ const EN={
 'ឧ. កាហ្វេ':'e.g. Coffee','ឧ. កុំព្យូទ័រថ្មី':'e.g. New laptop','ឧ. ថ្លៃជួលផ្ទះ':'e.g. House rent',
 'ឧ. ធ្នូ ២០២៦':'e.g. December 2026','ឧ. បង ដារ៉ា':'e.g. Dara','ឧ. ផ្សារធំថ្មី':'e.g. Central Market',
 'ឧ. អាហារពេលល្ងាចជាមួយក្រុមការងារ':'e.g. Team dinner',
+'កាបូបប្រើ':'Wallet','រូបភាព':'Photo','ថត':'Camera','ជ្រើសរូប':'Choose','រូបភាពវិក្កយបត្រ':'Receipt photo',
+'ដករូបចេញ':'Remove photo','បានភ្ជាប់រូបភាព':'Photo attached','បានដករូបភាពចេញ':'Photo removed',
+'កំពុងដំណើរការរូបភាព...':'Processing the photo...',
+'រូបភាពមិនទាន់រក្សាទុកបានទេ — សូមបន្ថែមជួរ photo':'Photo was not saved — add a "photo" column',
 /* — អត្ថបទមានតួរលេខជំនួស {…} — */
 '{n} ធាតុ':'{n} items','សរុប {a}':'Total {a}',
 'នៅសល់ {a} · {n} ថ្ងៃទៀត':'{a} left · {n} days to go',
@@ -1499,10 +1548,11 @@ const EN={
    មិនចូលទៅក្នុង input ដែលអ្នកប្រើវាយ ឬឈ្មោះដែលអ្នកប្រើដាក់ខ្លួនឯង។ */
 let _trBusy=false;
 function trEl(el){
-  if(!el || el.nodeType!==1) return;
+  if(!el || el.nodeType!==1 || !el.getAttribute) return;
   ['placeholder','aria-label','title'].forEach(a=>{
-    const v=el.getAttribute && el.getAttribute(a);
-    if(v && EN[v.trim()]) el.setAttribute(a, EN[v.trim()]);
+    const v=el.getAttribute(a); if(!v) return;
+    const en=EN[v.trim()];
+    if(en && en!==v) el.setAttribute(a, en);      // សរសេរតែពេលខុសគ្នា
   });
 }
 function trDOM(root){
@@ -1511,7 +1561,10 @@ function trDOM(root){
   try{
     if(root.nodeType===3){
       const k=root.nodeValue.trim();
-      if(k && EN[k]) root.nodeValue=root.nodeValue.replace(k,EN[k]);
+      if(k && EN[k] && EN[k]!==k){
+        const nv=root.nodeValue.replace(k,EN[k]);
+        if(nv!==root.nodeValue) root.nodeValue=nv;  // កុំសរសេរតម្លៃដដែល → mutation មិនចេះចប់
+      }
     }else if(root.nodeType===1){
       trEl(root);
       root.querySelectorAll('[placeholder],[aria-label],[title]').forEach(trEl);
@@ -1522,7 +1575,9 @@ function trDOM(root){
         const p=n.parentNode;
         if(p && (p.tagName==='SCRIPT'||p.tagName==='STYLE')) continue;
         const k=n.nodeValue.trim();
-        if(k && EN[k]) jobs.push([n, n.nodeValue.replace(k,EN[k])]);
+        if(!k || !EN[k] || EN[k]===k) continue;
+        const nv=n.nodeValue.replace(k,EN[k]);
+        if(nv!==n.nodeValue) jobs.push([n,nv]);
       }
       jobs.forEach(([node,v])=>node.nodeValue=v);
     }
@@ -1600,12 +1655,19 @@ function catsLoad(){
 }
 function catsSave(){ try{ localStorage.setItem(catKey(), JSON.stringify(catStore)); }catch(e){} }
 function rebuildCats(){
-  ['expense','income'].forEach(t=>{
-    const list=BUILTIN[t].filter(c=>!catStore.hide.includes(c.id))
-                         .concat(catStore.add[t]||[]);
-    CATS[t].length=0; CATS[t].push(...list);
+  ['expense','income'].forEach(k=>{            // 'k' មិនមែន 't' — ព្រោះ t() ជាមុខងារបកប្រែ
+    const list=BUILTIN[k].filter(c=>!catStore.hide.includes(c.id))
+                         .concat(catStore.add[k]||[]);
+    CATS[k].length=0; CATS[k].push(...list);
   });
-  const el=$('#sCats'); if(el) el.textContent=kh(CATS.expense.length+CATS.income.length)+' ប្រភេទ';
+  updateCatCount();
+}
+// ដាច់ដោយឡែក ព្រោះ rebuildCats() រត់នៅកម្រិតកំពូល មុន $() និង kh() ត្រូវប្រកាស (TDZ)
+function updateCatCount(){
+  const el=document.getElementById('sCats');
+  if(!el) return;
+  // try/catch ព្រោះការហៅដំបូងកើតឡើងមុន kh() ត្រូវប្រកាស (typeof ក៏បោះកំហុសដែរក្នុង TDZ)
+  try{ el.textContent=kh(CATS.expense.length+CATS.income.length)+' '+t('ប្រភេទ'); }catch(e){}
 }
 rebuildCats();
 // ប្រភេទដែលកំពុងប្រើ (សូម្បីលាក់ ឬលុប) នៅតែបង្ហាញឈ្មោះបានក្នុងបញ្ជីចាស់
@@ -1861,15 +1923,46 @@ let locSupported=true;
 function txToRow(t){
   const row={type:t.t, category:t.cat||null, amount:t.a, note:t.n||'',
              date:dtToIso(t.d,t.tm), wallet:t.w||null, wallet_to:t.w2||null};
-  if(locSupported) row.location=t.loc||null;
+  if(locSupported)   row.location=t.loc||null;
+  if(photoSupported) row.photo=t.photo||null;
   return row;
 }
 function rowToTx(r){
   const {d,tm}=isoToDT(r.date);
   return {id:r.id, t:r.type, cat:r.category, n:r.note||'', a:Number(r.amount)||0,
-          w:r.wallet||'', w2:r.wallet_to||'', d, tm, loc:r.location||''};
+          w:r.wallet||'', w2:r.wallet_to||'', d, tm, loc:r.location||'', photo:r.photo||''};
 }
-const missingLocCol = e => e && /location/i.test(e.message||'');
+const missingLocCol   = e => e && /location/i.test(e.message||'');
+const missingPhotoCol = e => e && /photo/i.test(e.message||'');
+let photoSupported=true;
+
+/* ── រូបភាពវិក្កយបត្រ ──
+   រូបត្រូវបង្រួមមក ១០០០px និងគុណភាព .7 មុនរក្សាទុក ព្រោះវាទៅជា base64 ក្នុងជួរ text។
+   ទំហំគោលដៅ ≈ ១៥០KB ក្នុងមួយរូប — មិនធ្ងន់ពេកសម្រាប់ Postgres ឬ localStorage cache។ */
+const PHOTO_MAX=1000, PHOTO_Q=.7;
+function shrinkImage(file){
+  return new Promise((res,rej)=>{
+    if(!/^image\//.test(file.type)) return rej(new Error('not image'));
+    const rd=new FileReader();
+    rd.onerror=()=>rej(new Error('read'));
+    rd.onload=()=>{
+      const im=new Image();
+      im.onerror=()=>rej(new Error('decode'));
+      im.onload=()=>{
+        let {width:iw, height:ih}=im;
+        const sc=Math.min(1, PHOTO_MAX/Math.max(iw,ih));
+        iw=Math.round(iw*sc); ih=Math.round(ih*sc);
+        const c=document.createElement('canvas'); c.width=iw; c.height=ih;
+        const ctx=c.getContext('2d');
+        if(!ctx) return rej(new Error('canvas'));
+        ctx.drawImage(im,0,0,iw,ih);
+        try{ res(c.toDataURL('image/jpeg',PHOTO_Q)); }catch(e){ rej(e); }
+      };
+      im.src=rd.result;
+    };
+    rd.readAsDataURL(file);
+  });
+}
 // ── ទីតាំង៖ "ឈ្មោះ @lat,lng" · ផ្នែកណាមួយអាចខ្វះបាន ──
 function buildLoc(name,lat,lng){
   const n=(name||'').trim();
@@ -2162,6 +2255,11 @@ async function addTxn(t){
     ({data,error}=await sb.from('transactions').insert(txToRow(t)).select().single());
     toast('ទីតាំងមិនទាន់រក្សាទុកបានទេ — សូមបន្ថែមជួរ location');
   }
+  if(missingPhotoCol(error)){
+    photoSupported=false;
+    ({data,error}=await sb.from('transactions').insert(txToRow(t)).select().single());
+    toast('រូបភាពមិនទាន់រក្សាទុកបានទេ — សូមបន្ថែមជួរ photo');
+  }
   if(error){ toast('រក្សាទុកបរាជ័យ៖ '+error.message); return t; }
   const saved=rowToTx(data);
   state.txns.unshift(saved); state.txns.sort(byDate); persist(); refresh();
@@ -2175,6 +2273,10 @@ async function updateTxn(t, quiet){
   let {error}=await sb.from('transactions').update(txToRow(t)).eq('id',t.id);
   if(missingLocCol(error)){
     locSupported=false;
+    ({error}=await sb.from('transactions').update(txToRow(t)).eq('id',t.id));
+  }
+  if(missingPhotoCol(error)){
+    photoSupported=false;
     ({error}=await sb.from('transactions').update(txToRow(t)).eq('id',t.id));
   }
   if(error && !quiet) toast('រក្សាទុកបរាជ័យ៖ '+error.message);
@@ -2427,6 +2529,7 @@ function itemHTML(t){
         t.loc? ` · <span class="txloc"><svg width="11" height="11" style="vertical-align:-1px" aria-hidden="true"><use href="#c-pin"></use></svg>${locLabel(t.loc)}</span>`:''
       }</small></div>
       <div class="amt ${cls}">${sign}${moneyNum(t.a)}</div>
+      ${t.photo? `<img class="txshot" src="${t.photo}" alt="">`:''}
     </button>
   </div>`;
 }
@@ -3145,7 +3248,7 @@ $('#budSave').onclick=async()=>{
 
 /* ═══════════ ១២. បន្ថែម / កែ ប្រតិបត្តិការ ═══════════ */
 const draft={type:'expense', cat:'food', wal:'aba', wal2:'cash', date:TODAY, expr:'0', cur:'KHR',
-             lat:'', lng:'', editing:null};
+             lat:'', lng:'', photo:'', editing:null};
 let batch=[];   // មុខផ្សេងទៀតដែលរង់ចាំរក្សាទុករួមគ្នា
 
 function evalExpr(s){
@@ -3205,9 +3308,9 @@ $('#addMore').onclick=()=>{
   if(draft.type==='transfer'){ toast('ការផ្ទេរមិនអាចបញ្ចូលច្រើនមុខទេ'); return; }
   batch.push({t:draft.type, cat:draft.cat, a,
               n:$('#noteIn').value.trim()||catOf(draft.type,draft.cat).n,
-              loc:buildLoc($('#locIn').value, draft.lat, draft.lng),
+              loc:buildLoc($('#locIn').value, draft.lat, draft.lng), photo:draft.photo,
               w:draft.wal, w2:'', d:draft.date});
-  draft.expr='0'; $('#noteIn').value='';
+  draft.expr='0'; $('#noteIn').value=''; draft.photo=''; drawPhoto();
   drawAmt(); renderBatch(); buzz(8);
   toast('បានបន្ថែមទៅបញ្ជី — បញ្ចូលមុខបន្ទាប់');
 };
@@ -3270,6 +3373,8 @@ function openAdd(type, tx){
   draft.date    = tx? tx.d  : TODAY;
   draft.expr    = tx? String(tx.a) : '0';
   $('#noteIn').value = tx? tx.n : '';
+  draft.photo = tx? (tx.photo||'') : '';
+  drawPhoto();
   const lp=parseLoc(tx? tx.loc : '');
   $('#locIn').value=lp.name; draft.lat=lp.lat; draft.lng=lp.lng;
   $('#locBtn').classList.toggle('on', !!lp.lat);
@@ -3283,6 +3388,36 @@ function openAdd(type, tx){
 $$('#typeSeg button').forEach(b=>b.onclick=()=>setType(b.dataset.t));
 
 /* ── ទីតាំងបច្ចុប្បន្ន (GPS) ── */
+/* ── រូបភាពវិក្កយបត្រ ── */
+function drawPhoto(){
+  const has=!!draft.photo;
+  $('#photoPrev').style.display = has? 'block':'none';
+  if(has) $('#photoImg').src=draft.photo;
+}
+async function takePhoto(input){
+  const f=input.files && input.files[0];
+  input.value='';
+  if(!f) return;
+  toast('កំពុងដំណើរការរូបភាព...');
+  try{
+    draft.photo=await shrinkImage(f);
+    drawPhoto(); buzz(10); toast('បានភ្ជាប់រូបភាព');
+  }catch(e){
+    toast(e.message==='not image' ? 'សូមជ្រើសឯកសាររូបភាព' : 'មិនអាចអានរូបភាពបានទេ');
+  }
+}
+$('#photoPick').onclick=()=>$('#photoFile').click();
+$('#photoCam').onclick =()=>$('#photoFileCam').click();
+$('#photoFile').onchange   =e=>takePhoto(e.target);
+$('#photoFileCam').onchange=e=>takePhoto(e.target);
+$('#photoDel').onclick=()=>{ draft.photo=''; drawPhoto(); toast('បានដករូបភាពចេញ'); };
+
+/* ── មើលរូបពេញអេក្រង់ ── */
+function openLightbox(src){ $('#lbImg').src=src; $('#lightbox').classList.add('on'); }
+function closeLightbox(){ $('#lightbox').classList.remove('on'); }
+$('#lbClose').onclick=closeLightbox;
+$('#lightbox').onclick=e=>{ if(e.target.id!=='lbImg') closeLightbox(); };
+
 $('#locBtn').onclick=()=>{
   if(draft.lat){                                   // ចុចម្តងទៀត = ដកកូអរដោនេចេញ
     draft.lat=draft.lng=''; $('#locBtn').classList.remove('on');
@@ -3332,14 +3467,14 @@ $('#saveBtn').onclick=async()=>{
     (draft.type==='transfer' ? tf('ផ្ទេរទៅ {w}',{w:walOf(draft.wal2).n}) : catOf(draft.type,draft.cat).n);
   if(draft.editing){
     const t=state.txns.find(x=>x.id===draft.editing);
-    Object.assign(t,{t:draft.type, cat:draft.type==='transfer'?null:draft.cat, n:name, a, loc,
+    Object.assign(t,{t:draft.type, cat:draft.type==='transfer'?null:draft.cat, n:name, a, loc, photo:draft.photo,
                      w:draft.wal, w2:draft.type==='transfer'?draft.wal2:'', d:draft.date});
     hideSheet(); buzz(12);
     await updateTxn(t);
     toast('បានរក្សាទុកការកែ');
   }else{
     const pending=[...batch];
-    if(a>0) pending.push({t:draft.type, cat:draft.type==='transfer'?null:draft.cat, n:name, a, loc,
+    if(a>0) pending.push({t:draft.type, cat:draft.type==='transfer'?null:draft.cat, n:name, a, loc, photo:draft.photo,
                           w:draft.wal, w2:draft.type==='transfer'?draft.wal2:'', d:draft.date});
     batch=[]; hideSheet(); buzz(12);
     const tm=new Date().toTimeString().slice(0,5);
@@ -3363,6 +3498,7 @@ function openDetail(id){
       <div class="big ${t.t==='income'?'up':t.t==='expense'?'down':''}">${sign}${money(t.a)}</div>
       <p>${t.n}</p>
     </div>
+    ${t.photo? `<img class="dshot" id="dShot" src="${t.photo}" alt="រូបភាពវិក្កយបត្រ">`:''}
     <div class="panel" style="margin:0 0 var(--sp4); padding:var(--sp2) 0">
       <div class="kv"><span>ប្រភេទ</span><b>${c.n}</b></div>
       <div class="kv"><span>កាបូប</span><b>${t.t==='transfer'?`${walOf(t.w).n} → ${walOf(t.w2).n}`:walOf(t.w).n}</b></div>
@@ -3380,6 +3516,7 @@ function openDetail(id){
     <button class="save" id="dEdit"><svg width="17" height="17" style="vertical-align:-3px" aria-hidden="true"><use href="#c-pencil"></use></svg> កែសម្រួល</button>
     <button class="save ghost" id="dDel"><svg width="17" height="17" style="vertical-align:-3px" aria-hidden="true"><use href="#c-trash"></use></svg> លុបចោល</button>`;
   showSheet('#shDetail');
+  const shot=$('#dShot'); if(shot) shot.onclick=()=>openLightbox(t.photo);
   $('#dEdit').onclick=()=>{ hideSheet(); setTimeout(()=>openAdd(t.t,t),260); };
   $('#dDel').onclick=async()=>{
     hideSheet(); buzz(14);
@@ -3473,7 +3610,7 @@ async function restoreFromJSON(file){
   for(const g of (data.goals||[])) await addGoal({n:g.n, now:g.now, tgt:g.tgt, due:g.due});
   for(const d of (data.debts||[])) await addDebt({dir:d.dir, n:d.n, a:d.a, due:d.due, paid:d.paid});
   for(const t of (data.txns||[])){
-    await addTxn({t:t.t, cat:t.cat, n:t.n, a:t.a, loc:t.loc||'',
+    await addTxn({t:t.t, cat:t.cat, n:t.n, a:t.a, loc:t.loc||'', photo:t.photo||'',
       w:walletIdMap[t.w]||'', w2:t.w2?(walletIdMap[t.w2]||''):'', d:t.d, tm:t.tm});
   }
   for(const r of (data.recurring||[])){
@@ -3595,7 +3732,7 @@ function refresh(){
   if(state.screen==='wallet') renderWallets();
   if(state.screen==='all')  { renderAll(); if(allMode==='cal') renderCalView(); }
 }
-$('#sCats').textContent=kh(CATS.expense.length+CATS.income.length)+' ប្រភេទ';
+updateCatCount();
 updateRateSub();
 
 /* ═══════════ ១៨. Service Worker (ដំណើរការ offline + ដំឡើងលើ home screen) ═══════════
