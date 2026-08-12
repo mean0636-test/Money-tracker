@@ -486,7 +486,7 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
 .authcard{display:flex; flex-direction:column; gap:var(--sp3); width:100%;}
 .authhead{text-align:center; margin-bottom:var(--sp5);}
 .authhead b{display:block; font-size:20px; font-weight:700; margin-top:var(--sp3);}
-.authhead p{margin:4px 0 0; font-size:13px; color:var(--soft);}
+.authhead p{margin:4px auto 0; max-width:280px; font-size:13px; color:var(--soft);}
 .authdiv{display:flex; align-items:center; gap:var(--sp3); margin:var(--sp2) 0; color:var(--soft); font-size:12px;}
 .authdiv::before,.authdiv::after{content:''; flex:1; height:1px; background:var(--line);}
 .gbtn{width:100%; border:1px solid var(--line); background:var(--card); border-radius:var(--r-md); padding:13px; display:flex; align-items:center; justify-content:center; gap:8px; font-size:14px; cursor:pointer; color:var(--ink);}
@@ -507,6 +507,13 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
 .lockpad button{width:64px; height:64px; border-radius:50%; border:none; background:rgba(255,255,255,.14); color:#fff; font-size:22px; font-family:var(--num); cursor:pointer;}
 .lockpad button:active{background:rgba(255,255,255,.3);}
 .lockerr{font-size:13px; color:#FFD9D4; min-height:18px;}
+
+/* ── ប៊ូតុងក្រយៅដៃលើអេក្រង់សោ ── */
+.biobtn{display:inline-flex; align-items:center; gap:9px; border:1px solid rgba(255,255,255,.3);
+  background:rgba(255,255,255,.14); color:#fff; border-radius:999px; padding:11px 20px;
+  font-size:13.5px; font-family:var(--khmer); cursor:pointer; margin-top:var(--sp2);
+  transition:transform .18s var(--spring), background .2s;}
+.biobtn:active{transform:scale(.94); background:rgba(255,255,255,.26);}
 
 /* ── ២០. ជម្រើសពណ៌កាបូប ── */
 .swatches{display:flex; gap:8px; flex-wrap:wrap;}
@@ -718,6 +725,7 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
 <symbol id="c-investment" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19h16"/><path d="m5 15 4.5-5 3.5 3.5L19 6"/><path d="M15 6h4v4"/></symbol>
 <symbol id="c-tip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 4v16"/><path d="M15.5 7.5A3 3 0 0 0 12.8 6h-1.4a2.6 2.6 0 0 0-.4 5.2l2 .3a2.6 2.6 0 0 1-.4 5.2h-1.4a3 3 0 0 1-2.7-1.5"/></symbol>
 <symbol id="c-parttime" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 1.8"/></symbol>
+<symbol id="c-finger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4a6 6 0 0 0-6 6v3a9 9 0 0 1-.7 3.5"/><path d="M18 10a6 6 0 0 0-3-5.2"/><path d="M9 10a3 3 0 0 1 6 0v3a12 12 0 0 1-.8 4.3"/><path d="M12 10v3.5a16 16 0 0 1-1.4 6.5"/><path d="M17.8 13.5a15 15 0 0 1-.9 5"/></symbol>
 <symbol id="c-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="3.4"/></symbol>
 <symbol id="c-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m4 17 4.5-4.5 3 3L15 12l5 5"/></symbol>
 <symbol id="c-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
@@ -839,6 +847,8 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
   <div id="lockMsg">បញ្ចូលលេខសម្ងាត់</div>
   <div class="lockdots" id="lockDots"></div>
   <div class="lockerr" id="lockErr"></div>
+  <button class="biobtn" id="lockBio" style="display:none">
+    <svg width="20" height="20" aria-hidden="true"><use href="#c-finger"></use></svg>ដោះសោដោយក្រយៅដៃ</button>
   <div class="lockpad" id="lockPad">
     <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
     <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
@@ -894,6 +904,11 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
       <button class="hbtn" id="statsPrev" aria-label="ខែមុន"><svg width="18" height="18" aria-hidden="true"><use href="#c-back"></use></svg></button>
       <h1 style="text-align:center">ស្ថិតិ<small id="statsMonthLbl"></small></h1>
       <button class="hbtn" id="statsNext" aria-label="ខែក្រោយ"><svg width="18" height="18" aria-hidden="true"><use href="#c-chev"></use></svg></button>
+    </div>
+    <div class="walbanner" id="statWalBanner" style="display:none">
+      <span class="wbi"><svg width="18" height="18" aria-hidden="true"><use href="#c-wallet"></use></svg></span>
+      <span class="wbmid"><b id="swbName"></b><small id="swbBal"></small></span>
+      <button class="wbx" id="swbClear" aria-label="មើលកាបូបទាំងអស់"><svg width="15" height="15" aria-hidden="true"><use href="#c-x"></use></svg></button>
     </div>
     <div class="seg" role="tablist">
       <button class="on" data-k="expense" role="tab">ចំណាយ</button>
@@ -978,6 +993,11 @@ body:not([data-auth="in"]) .phone{padding-bottom:0;}
         <span class="si"><svg width="17" height="17" aria-hidden="true"><use href="#c-lock"></use></svg></span>
         <span class="stxt">សោបើកកម្មវិធី<small>លេខសម្ងាត់ ៦ ខ្ទង់</small></span>
         <button class="sw" id="swLock" role="switch" aria-checked="false" aria-label="សោបើកកម្មវិធី"><i></i></button>
+      </div>
+      <div class="srow" id="rowBio" style="display:none">
+        <span class="si"><svg width="17" height="17" aria-hidden="true"><use href="#c-finger"></use></svg></span>
+        <span class="stxt">ដោះសោដោយក្រយៅដៃ<small id="bioSub">ប្រើក្រយៅដៃ ឬមុខ ជំនួសលេខសម្ងាត់</small></span>
+        <button class="sw" id="swBio" role="switch" aria-checked="false" aria-label="ដោះសោដោយក្រយៅដៃ"><i></i></button>
       </div>
       <button class="srow" id="bReport">
         <span class="si"><svg width="17" height="17" aria-hidden="true"><use href="#c-chart"></use></svg></span>
@@ -1518,7 +1538,12 @@ const EN={
 'ឧ. កាហ្វេ':'e.g. Coffee','ឧ. កុំព្យូទ័រថ្មី':'e.g. New laptop','ឧ. ថ្លៃជួលផ្ទះ':'e.g. House rent',
 'ឧ. ធ្នូ ២០២៦':'e.g. December 2026','ឧ. បង ដារ៉ា':'e.g. Dara','ឧ. ផ្សារធំថ្មី':'e.g. Central Market',
 'ឧ. អាហារពេលល្ងាចជាមួយក្រុមការងារ':'e.g. Team dinner',
-'កាបូបប្រើ':'Wallet','រូបភាព':'Photo','ថត':'Camera','ជ្រើសរូប':'Choose','រូបភាពវិក្កយបត្រ':'Receipt photo',
+'កាបូបប្រើ':'Wallet','សូមចូលគណនីម្តងទៀត':'Please sign in again','ដោះសោដោយក្រយៅដៃ':'Unlock with fingerprint','ប្រើក្រយៅដៃ ឬមុខ ជំនួសលេខសម្ងាត់':'Use your fingerprint or face instead of the PIN',
+'សូមបើកសោកម្មវិធីជាមុនសិន':'Please turn on the app lock first',
+'បានបើកការដោះសោដោយក្រយៅដៃ':'Fingerprint unlock turned on',
+'បានបិទការដោះសោដោយក្រយៅដៃ':'Fingerprint unlock turned off',
+'ឧបករណ៍នេះមិនអាចចុះឈ្មោះក្រយៅដៃបានទេ':'This device could not register a fingerprint',
+'បានបោះបង់':'Cancelled','រូបភាព':'Photo','ថត':'Camera','ជ្រើសរូប':'Choose','រូបភាពវិក្កយបត្រ':'Receipt photo',
 'ដករូបចេញ':'Remove photo','បានភ្ជាប់រូបភាព':'Photo attached','បានដករូបភាពចេញ':'Photo removed',
 'កំពុងដំណើរការរូបភាព...':'Processing the photo...',
 'រូបភាពមិនទាន់រក្សាទុកបានទេ — សូមបន្ថែមជួរ photo':'Photo was not saved — add a "photo" column',
@@ -1678,7 +1703,7 @@ const catOf = (t,id)=> allCatOf(t,id) || {n:'ផ្ទេរប្រាក់',
 
 const state = {
   theme:'light', screen:'home', statKind:'expense', filter:'all', query:'',
-  email:null, budget:0, day:null, walFilter:null,
+  email:null, budget:0, day:null, walFilter:null, statWal:null,
   // រូបិយប័ណ្ណ៖ ទឹកប្រាក់រក្សាទុកជា "រៀល" ជានិច្ច — display/rate ប៉ះពាល់តែការបង្ហាញ
   display:'KHR', rate:4100,
   wallets:[], txns:[], goals:[], debts:[], recurring:[],
@@ -2017,6 +2042,13 @@ async function fetchAll(){
 
 // ---------- Cache ក្នុងម៉ាស៊ីន (ប្រើទាំង guest mode និងសម្រាប់បង្ហាញលឿនមុនទាញពី server) ----------
 function cacheKey(email){ return 'mn_cache_'+(email||'guest'); }
+const LAST_EMAIL='mn_last_email';
+function rememberEmail(){
+  try{
+    if(guestMode || !state.email) localStorage.removeItem(LAST_EMAIL);
+    else localStorage.setItem(LAST_EMAIL, state.email);
+  }catch(e){}
+}
 function cacheSave(){
   try{ localStorage.setItem(cacheKey(state.email), JSON.stringify({
     txns:state.txns, wallets:state.wallets, goals:state.goals, debts:state.debts,
@@ -2067,8 +2099,11 @@ let _entered=false;
 async function enterApp(){
   document.body.dataset.auth='in';
   _entered=true;
+  rememberEmail();
   const cached=cacheLoad(state.email);
   if(cached) Object.assign(state,cached);
+  // បង្ហាញទិន្នន័យ cache ភ្លាម រួចទើបទាញពី server (លឿន និងដំណើរការពេលអ៊ីនធឺណិតយឺត)
+  if(cached){ catsLoad(); updateProfileUI(); go('home'); refresh(); }
   if(!guestMode) await fetchAll();
   else if(!state.wallets.length) await addWallet({n:'សាច់ប្រាក់', sub:'កាបូបដៃ', style:'zest', color:'#8FA82A', open:0}, true);
   await applyRecurring();
@@ -2210,7 +2245,7 @@ $('#bOut').onclick=async()=>{
   if(!confirm('ចាកចេញពីគណនី? ទិន្នន័យក្នុងម៉ាស៊ីននឹងត្រូវលុប (នៅតែមានលើ server)')) return;
   try{ localStorage.removeItem(cacheKey(state.email)); }catch(e){}   // កុំទុកទិន្នន័យអ្នកប្រើចាស់ក្នុងឧបករណ៍
   await sb.auth.signOut();
-  guestMode=false; localStorage.removeItem('mn_guest');
+  guestMode=false; localStorage.removeItem('mn_guest'); localStorage.removeItem(LAST_EMAIL);
   state.txns=[]; state.wallets=[]; state.goals=[]; state.debts=[]; state.recurring=[]; state.budget=0;
   // onAuthStateChange (SIGNED_OUT) ខាងក្រោមប្តូរអេក្រង់ទៅ welcome ដោយស្វ័យប្រវត្តិ
 };
@@ -2234,8 +2269,24 @@ sb.auth.onAuthStateChange(async(event,session)=>{
     document.body.dataset.auth=''; _entered=false;
     showAuthScreen('welcome');
   }else if(event==='INITIAL_SESSION' && !session){
-    if(localStorage.getItem('mn_guest')==='1'){ guestMode=true; state.email=null; await enterApp(); }
-    // ផ្សេងទៀត៖ នៅលើ splash — អ្នកប្រើអាចចុច "ចាប់ផ្តើម"
+    if(localStorage.getItem('mn_guest')==='1'){ guestMode=true; state.email=null; await enterApp(); return; }
+    // អ្នកប្រើធ្លាប់ចូលគណនី តែ session មិនទាន់ស្តារ — បង្ហាញទិន្នន័យ cache សិន
+    // កុំឱ្យគេឃើញផ្ទាំងចាប់ផ្តើម ហើយចុច "អ្នកភ្ញៀវ" ដែលធ្វើឱ្យទិន្នន័យមើលទៅដូចបាត់
+    const last=localStorage.getItem(LAST_EMAIL);
+    if(last && cacheLoad(last)){
+      guestMode=false; state.email=last;
+      await enterApp();
+      // បញ្ជាក់ session ម្តងទៀត — បើពិតជាចាកចេញ ត្រឡប់ទៅផ្ទាំងស្វាគមន៍វិញ
+      setTimeout(async()=>{
+        try{
+          const {data}=await sb.auth.getSession();
+          if(!data || !data.session){
+            _entered=false; document.body.dataset.auth=''; showAuthScreen('welcome');
+            toast(t('សូមចូលគណនីម្តងទៀត'));
+          }
+        }catch(e){}
+      },2500);
+    }
   }
 });
 
@@ -2483,7 +2534,8 @@ function renderDeck(){
       </div>
     </button>`).join('');
   $('#dots').innerHTML = cards.map((_,i)=>`<i class="dot${i===0?' on':''}"></i>`).join('');
-  $$('#deck .wcard').forEach(b=>b.onclick=()=>go('wallet'));
+  // ចុចកាត → ផ្ទាំងរបាយការណ៍ ចម្រោះតាមកាបូបនោះ (កាតទី១ = គ្រប់កាបូប)
+  $$('#deck .wcard').forEach((b,i)=>b.onclick=()=>openWalStats(cards[i].id||null));
 }
 function renderBudget(animate){
   const exp=sumBy(t=>t.t==='expense'&&inView(t));
@@ -2677,8 +2729,10 @@ $('#cvClear').onclick=()=>{ state.day=null; renderCalView(); renderAll(); };
 // inMonth(t,view): ត្រូវប្រតិបត្តិការ t ក្នុងខែ/ឆ្នាំដែលបញ្ជាក់ក្នុង view ({y,m}) ដែរឬទេ
 function inMonth(t,view){ const d=parse(t.d); return d.getFullYear()===view.y && d.getMonth()===view.m; }
 // computeCategoryBreakdown(kind,view): បូកសរុបទឹកប្រាក់តាមប្រភេទ សម្រាប់ខែ view — ប្រើរួមទាំងស្ថិតិ និងរបាយការណ៍រូបភាព
+// inWal(): ត្រងតាមកាបូបដែលកំពុងមើលក្នុងផ្ទាំងរបាយការណ៍ (null = គ្រប់កាបូប)
+function inWal(t){ return !state.statWal || t.w===state.statWal || t.w2===state.statWal; }
 function computeCategoryBreakdown(kind,view){
-  const rows=state.txns.filter(t=>t.t===kind&&inMonth(t,view));
+  const rows=state.txns.filter(t=>t.t===kind&&inMonth(t,view)&&inWal(t));
   const total=rows.reduce((s,t)=>s+t.a,0);
   const byCat={};
   rows.forEach(t=>{ byCat[t.cat]=(byCat[t.cat]||0)+t.a; });
@@ -2688,8 +2742,8 @@ function computeCategoryBreakdown(kind,view){
 // computeMonthTotals(view): ចំណូល/ចំណាយសរុបសម្រាប់ខែ view
 function computeMonthTotals(view){
   return {
-    inc: sumBy(t=>t.t==='income'&&inMonth(t,view)),
-    exp: sumBy(t=>t.t==='expense'&&inMonth(t,view)),
+    inc: sumBy(t=>t.t==='income'&&inMonth(t,view)&&inWal(t)),
+    exp: sumBy(t=>t.t==='expense'&&inMonth(t,view)&&inWal(t)),
   };
 }
 function shiftView(view,delta){
@@ -2697,7 +2751,22 @@ function shiftView(view,delta){
   while(m<0){m+=12;y--;} while(m>11){m-=12;y++;}
   return {y,m};
 }
+/* ── បើកផ្ទាំងរបាយការណ៍សម្រាប់កាបូបមួយ (null = គ្រប់កាបូប) ── */
+function openWalStats(wid){
+  state.statWal = wid || null;
+  statsView={y:VIEW.y, m:VIEW.m};     // ត្រឡប់មកខែបច្ចុប្បន្នជានិច្ច
+  go('stats');
+}
+function renderStatWalBanner(){
+  const w = state.statWal && state.wallets.find(x=>x.id===state.statWal);
+  const el=$('#statWalBanner');
+  if(!w){ el.style.display='none'; return; }
+  el.setAttribute('style', cardStyle(w.color)+'display:flex;');
+  $('#swbName').textContent=w.n;
+  $('#swbBal').textContent=money(walBalance(w.id));
+}
 function renderStats(){
+  renderStatWalBanner();
   const kind=state.statKind;
   $('#statsMonthLbl').textContent=`${KH_M[statsView.m]} ${kh(statsView.y)}`;
   const {total,arr}=computeCategoryBreakdown(kind,statsView);
@@ -3062,6 +3131,11 @@ function openLock(mode){
   updateLockDots();
   $('#lockScreen').classList.remove('hide');
   $('#lockPad [data-k="cancel"]').style.display = mode==='unlock' ? 'none':'block';
+  const showBio = mode==='unlock' && bioOn();
+  $('#lockBio').style.display = showBio ? 'inline-flex':'none';
+  // សួរក្រយៅដៃភ្លាម — កម្មវិធីរុករកតម្រូវឱ្យមានសកម្មភាពអ្នកប្រើក្នុងករណីខ្លះ
+  // ដូច្នេះបើបរាជ័យ ប៊ូតុងនៅតែមានសម្រាប់ចុចដោយដៃ
+  if(showBio) setTimeout(tryBioUnlock, 350);
 }
 function closeLock(){ $('#lockScreen').classList.add('hide'); lockMode=null; lockBuf=''; }
 function maybeShowLock(){ if(localStorage.getItem('mn_pinEnabled')==='1') openLock('unlock'); }
@@ -3085,6 +3159,7 @@ $('#lockPad').onclick=async e=>{
       localStorage.setItem('mn_pinEnabled','1');
       closeLock();
       $('#swLock').classList.add('on'); $('#swLock').setAttribute('aria-checked','true');
+      paintBioUI();
       toast('បានបើកសោកម្មវិធី');
     }else{
       $('#lockErr').textContent='លេខសម្ងាត់មិនដូចគ្នា — សូមព្យាយាមម្តងទៀត';
@@ -3094,7 +3169,8 @@ $('#lockPad').onclick=async e=>{
     const hash=await sha256Hex(lockBuf);
     if(hash===localStorage.getItem('mn_pinHash')){
       localStorage.removeItem('mn_pinHash'); localStorage.removeItem('mn_pinEnabled');
-      closeLock();
+      localStorage.removeItem(BIO_KEY);          // ក្រយៅដៃពឹងលើសោ — បិទទាំងពីរ
+      closeLock(); paintBioUI();
       $('#swLock').classList.remove('on'); $('#swLock').setAttribute('aria-checked','false');
       toast('បានបិទសោកម្មវិធី');
     }else{ $('#lockErr').textContent='លេខសម្ងាត់មិនត្រឹមត្រូវ'; lockBuf=''; updateLockDots(); buzz([20,20,20]); }
@@ -3104,6 +3180,83 @@ $('#swLock').onclick=()=>{
   const enabled=localStorage.getItem('mn_pinEnabled')==='1';
   openLock(enabled?'disable':'set');
 };
+
+/* ═══════════ ស្គែនក្រយៅដៃ / មុខ (WebAuthn) ═══════════
+   យើងប្រើ WebAuthn ជាមួយ platform authenticator — ក្រយៅដៃមិនចេញពីឧបករណ៍ទេ។
+   កម្មវិធីមិនទទួលទិន្នន័យជីវមាត្រ វាគ្រាន់តែសួរឧបករណ៍ថា "ម្ចាស់បញ្ជាក់រួចហើយឬ?"។
+   វាបន្ថែមលើលេខសម្ងាត់ មិនជំនួសទេ — លេខសម្ងាត់នៅតែជាផ្លូវបម្រុង។           */
+const BIO_KEY='mn_bioId';
+const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf)))
+                      .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const unb64u = str => {
+  const b=atob(str.replace(/-/g,'+').replace(/_/g,'/'));
+  return Uint8Array.from(b, c=>c.charCodeAt(0));
+};
+const bioOn = () => !!localStorage.getItem(BIO_KEY);
+
+async function bioAvailable(){
+  try{
+    if(!window.PublicKeyCredential || !navigator.credentials) return false;
+    return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+  }catch(e){ return false; }
+}
+async function bioRegister(){
+  const uid=crypto.getRandomValues(new Uint8Array(16));
+  const cred=await navigator.credentials.create({publicKey:{
+    challenge:crypto.getRandomValues(new Uint8Array(32)),
+    rp:{name:'Money Note', id:location.hostname},
+    user:{id:uid, name:state.email||'guest', displayName:displayName()},
+    pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
+    authenticatorSelection:{authenticatorAttachment:'platform', userVerification:'required',
+                            residentKey:'preferred'},
+    timeout:60000, attestation:'none'
+  }});
+  if(!cred) throw new Error('no credential');
+  localStorage.setItem(BIO_KEY, b64u(cred.rawId));
+}
+async function bioVerify(){
+  const id=localStorage.getItem(BIO_KEY);
+  if(!id) return false;
+  const res=await navigator.credentials.get({publicKey:{
+    challenge:crypto.getRandomValues(new Uint8Array(32)),
+    allowCredentials:[{type:'public-key', id:unb64u(id)}],
+    userVerification:'required', timeout:60000
+  }});
+  return !!res;
+}
+function paintBioUI(){
+  $('#swBio').classList.toggle('on', bioOn());
+  $('#swBio').setAttribute('aria-checked', String(bioOn()));
+  const pin=localStorage.getItem('mn_pinEnabled')==='1';
+  $('#bioSub').textContent = pin
+    ? t('ប្រើក្រយៅដៃ ឬមុខ ជំនួសលេខសម្ងាត់')
+    : t('សូមបើកសោកម្មវិធីជាមុនសិន');
+}
+(async()=>{
+  if(await bioAvailable()){ $('#rowBio').style.display='flex'; paintBioUI(); }
+})();
+$('#swBio').onclick=async()=>{
+  if(bioOn()){
+    localStorage.removeItem(BIO_KEY); paintBioUI();
+    toast('បានបិទការដោះសោដោយក្រយៅដៃ'); return;
+  }
+  if(localStorage.getItem('mn_pinEnabled')!=='1'){
+    toast('សូមបើកសោកម្មវិធីជាមុនសិន'); return;
+  }
+  try{
+    await bioRegister(); paintBioUI(); buzz(12);
+    toast('បានបើកការដោះសោដោយក្រយៅដៃ');
+  }catch(e){
+    toast(e && e.name==='NotAllowedError' ? 'បានបោះបង់' : 'ឧបករណ៍នេះមិនអាចចុះឈ្មោះក្រយៅដៃបានទេ');
+  }
+};
+async function tryBioUnlock(){
+  if(lockMode!=='unlock' || !bioOn()) return;
+  try{
+    if(await bioVerify()){ closeLock(); buzz(10); }
+  }catch(e){ /* អ្នកប្រើបោះបង់ — ប្រើលេខសម្ងាត់ជំនួស */ }
+}
+$('#lockBio').onclick=tryBioUnlock;
 let _wasHidden=false;
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden){ _wasHidden=true; }
@@ -3130,7 +3283,8 @@ function go(name){
   }
   window.scrollTo({top:0, behavior:'instant'});
 }
-$$('.nb').forEach(b=>b.onclick=()=>{ state.walFilter=null; go(b.dataset.s); });
+$$('.nb').forEach(b=>b.onclick=()=>{ state.walFilter=null; state.statWal=null; go(b.dataset.s); });
+$('#swbClear').onclick=()=>{ state.statWal=null; renderStats(); };
 $('#bAll').onclick=()=>{ state.walFilter=null; go('all'); };
 /* ── បើកបញ្ជីប្រតិបត្តិការសម្រាប់កាបូបមួយ (null = ទាំងអស់) ── */
 function openWalTxns(wid){
